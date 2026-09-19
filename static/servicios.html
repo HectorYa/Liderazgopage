@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="es" class="bg-white">
+<head>
+  <meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Servicios — Excelentemente</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" /><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,100..900&family=Geist:wght@100..900&display=swap" rel="stylesheet" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>tailwind.config={theme:{extend:{fontFamily:{sans:['Geist','sans-serif'],serif:['Fraunces','serif']},colors:{primary:{DEFAULT:'#1a7a6d',light:'#2aa394',dark:'#145e54'},accent:{DEFAULT:'#e8a838'}}}}}</script>
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+<body class="font-sans antialiased bg-white text-[#1a1a2e]">
+<header class="sticky top-0 z-50 bg-white/90 backdrop-blur-md border-b border-black/5"><div class="max-w-[1280px] mx-auto px-6 flex h-16 items-center justify-between">
+  <a href="index.html" class="font-serif text-xl font-bold text-primary">Excelentemente</a>
+  <nav class="hidden md:flex items-center gap-1">
+    <a href="index.html" class="text-sm text-black/70 hover:text-primary px-3 py-2 rounded-md">Inicio</a>
+    <a href="nosotros.html" class="text-sm text-black/70 hover:text-primary px-3 py-2 rounded-md">Nosotros</a>
+    <a href="servicios.html" class="text-sm text-primary font-medium px-3 py-2 rounded-md">Servicios</a>
+    <a href="profesionales.html" class="text-sm text-black/70 hover:text-primary px-3 py-2 rounded-md">Profesionales</a>
+    <a href="blogs.html" class="text-sm text-black/70 hover:text-primary px-3 py-2 rounded-md">Blog</a>
+    <a href="contacto.html" class="text-sm text-black/70 hover:text-primary px-3 py-2 rounded-md">Contacto</a>
+  </nav>
+  <a href="login.html" class="inline-flex items-center gap-2 rounded-full border border-primary/30 bg-white px-5 py-2.5 text-sm font-semibold text-primary hover:bg-primary/5 transition-all"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg> Iniciar sesión</a>
+      <a href="agendar.html" class="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-primary to-primary-light px-5 py-2.5 text-sm font-semibold text-white shadow-lg shadow-primary/25 hover:scale-105 transition-all">
+    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+    Agendar
+  </a>
+</div></header>
+
+<section class="py-20 bg-gradient-to-b from-primary/5 to-white">
+  <div class="max-w-[1280px] mx-auto px-6">
+    <div class="text-center mb-16">
+      <p class="text-xs uppercase tracking-[0.18em] text-primary font-medium">Nuestros Servicios</p>
+      <h1 class="mt-3 font-serif text-4xl md:text-5xl font-bold tracking-tight">Servicios</h1>
+      <p class="mt-4 text-black/60 max-w-lg mx-auto">Ofrecemos una amplia gama de servicios especializados en salud mental y bienestar.</p>
+    </div>
+
+    <div id="psiquiatria" class="scroll-mt-24 mb-20">
+      <div class="flex items-center gap-4 mb-8">
+        <div class="service-icon"><svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg></div>
+        <div>
+          <h2 class="font-serif text-3xl font-bold">Psiquiatría</h2>
+          <p class="text-sm text-black/50">Terapias psiquiátricas de niños, adolescentes y adultos, familiares y de pareja.</p>
+        </div>
+      </div>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div class="rounded-2xl border border-black/5 bg-white p-6 card-hover">
+          <h3 class="font-semibold text-lg mb-2">Psicoterapia individual</h3>
+          <p class="text-sm text-black/60 leading-relaxed">La finalidad de la terapia individual es ayudarte a entender tu forma de comportarte, tus emociones y cómo tu forma de plantearte las cosas te lleva a sentirte como te sientes y actuar como actúas. Esto te permite liberarte de las emociones negativas y mejorar tu capacidad para tomar decisiones.</p>
+          <a href="contacto.html" class="mt-4 inline-flex items-center gap-1 text-xs font-medium text-primary hover:text-primary-dark transition-colors">Quiero saber más →</a>
+        </div>
+        <div class="rounded-2xl border border-black/5 bg-white p-6 card-hover">
+          <h3 class="font-semibold text-lg mb-2">Psicoterapia familiar</h3>
+          <p class="text-sm text-black/60 leading-relaxed">La terapia familiar ayuda a identificar formas de relacionarse en la familia que no son sanas para el desarrollo personal. Los conflictos derivados de la falta de comunicación eficaz o de las pautas de relación provocan que más de un miembro de la familia se encuentre mal.</p>
+          <a href="contacto.html" class="mt-4 inline-flex items-center gap-1 text-xs font-medium text-primary hover:text-primary-dark transition-colors">Quiero saber más →</a>
+        </div>
+        <div class="rounded-2xl border border-black/5 bg-white p-6 card-hover">
+          <h3 class="font-semibold text-lg mb-2">Terapia de pareja</h3>
+          <p class="text-sm text-black/60 leading-relaxed">En nuestro servicio de Terapia de Pareja, te brindamos un proceso que tiene como objetivo mejorar tu calidad de vida, el de tu pareja, y por lo tanto, el de tu relación, bajo el acompañamiento de un profesional que los ayudará a conocerse como individuos y como pareja.</p>
+          <a href="contacto.html" class="mt-4 inline-flex items-center gap-1 text-xs font-medium text-primary hover:text-primary-dark transition-colors">Quiero saber más →</a>
+        </div>
+        <div class="rounded-2xl border border-black/5 bg-white p-6 card-hover">
+          <h3 class="font-semibold text-lg mb-2">Orientación psicológica</h3>
+          <p class="text-sm text-black/60 leading-relaxed">La orientación psicológica nace como respuesta a exigencias de desarrollo social; luego que se fue contextualizando en el área escolar, el área laboral, familiar y personal para de una forma u otra promover el crecimiento, donde el profesional debe adoptar un rol de orientador con una serie de actitudes personales y profesionales.</p>
+          <a href="contacto.html" class="mt-4 inline-flex items-center gap-1 text-xs font-medium text-primary hover:text-primary-dark transition-colors">Quiero saber más →</a>
+        </div>
+      </div>
+    </div>
+
+    <div id="psicologia" class="scroll-mt-24 mb-20">
+      <div class="flex items-center gap-4 mb-8">
+        <div class="service-icon" style="background:linear-gradient(135deg,#2aa394,#1a7a6d)"><svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg></div>
+        <div>
+          <h2 class="font-serif text-3xl font-bold">Psicología</h2>
+          <p class="text-sm text-black/50">Consultas psicológicas para niños, adolescentes y adultos.</p>
+        </div>
+      </div>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div class="rounded-2xl border border-black/5 bg-white p-6 card-hover">
+          <h3 class="font-semibold text-lg mb-2">Consejería psicológica</h3>
+          <p class="text-sm text-black/60 leading-relaxed">La consejería incluye intervenciones tanto individuales como grupales, ayudando en la búsqueda de alternativas o soluciones a las personas que consultan, pero con la particularidad de ofrecer un servicio más a corto plazo que la psicoterapia.</p>
+          <a href="contacto.html" class="mt-4 inline-flex items-center gap-1 text-xs font-medium text-primary hover:text-primary-dark transition-colors">Quiero saber más →</a>
+        </div>
+        <div class="rounded-2xl border border-black/5 bg-white p-6 card-hover">
+          <h3 class="font-semibold text-lg mb-2">Evaluación psicológica</h3>
+          <p class="text-sm text-black/60 leading-relaxed">Realizamos evaluaciones psicológicas completas para determinar el estado emocional, cognitivo y conductual del paciente. Incluye pruebas psicométricas, entrevistas clínicas y observación directa para llegar a un diagnóstico preciso.</p>
+          <a href="contacto.html" class="mt-4 inline-flex items-center gap-1 text-xs font-medium text-primary hover:text-primary-dark transition-colors">Quiero saber más →</a>
+        </div>
+        <div class="rounded-2xl border border-black/5 bg-white p-6 card-hover">
+          <h3 class="font-semibold text-lg mb-2">Terapia cognitivo conductual (TCC)</h3>
+          <p class="text-sm text-black/60 leading-relaxed">La TCC es una de las terapias más efectivas para tratar la depresión, ansiedad, fobias y otros trastornos. Se enfoca en identificar y modificar patrones de pensamiento negativos y comportamientos poco adaptativos para mejorar tu bienestar.</p>
+          <a href="contacto.html" class="mt-4 inline-flex items-center gap-1 text-xs font-medium text-primary hover:text-primary-dark transition-colors">Quiero saber más →</a>
+        </div>
+        <div class="rounded-2xl border border-black/5 bg-white p-6 card-hover">
+          <h3 class="font-semibold text-lg mb-2">Terapia infantil y juvenil</h3>
+          <p class="text-sm text-black/60 leading-relaxed">Atención especializada para niños y adolescentes que presentan dificultades emocionales, conductuales o de adaptación. Utilizamos técnicas lúdicas y adaptadas a su edad para favorecer su desarrollo emocional saludable.</p>
+          <a href="contacto.html" class="mt-4 inline-flex items-center gap-1 text-xs font-medium text-primary hover:text-primary-dark transition-colors">Quiero saber más →</a>
+        </div>
+      </div>
+    </div>
+
+    <div id="terapias" class="scroll-mt-24 mb-20">
+      <div class="flex items-center gap-4 mb-8">
+        <div class="service-icon" style="background:linear-gradient(135deg,#a78bfa,#7c3aed)"><svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></div>
+        <div>
+          <h2 class="font-serif text-3xl font-bold">Terapias Grupales</h2>
+          <p class="text-sm text-black/50">Contamos con programas especializados en grupo.</p>
+        </div>
+      </div>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div class="rounded-2xl border border-black/5 bg-white p-6 card-hover">
+          <h3 class="font-semibold text-lg mb-2">Clínica de día</h3>
+          <p class="text-sm text-black/60 leading-relaxed">Programa terapéutico intensivo para pacientes que requieren un acompañamiento más frecuente. Incluye actividades grupales, talleres de habilidades y seguimiento personalizado durante el día, sin necesidad de hospitalización.</p>
+          <a href="contacto.html" class="mt-4 inline-flex items-center gap-1 text-xs font-medium text-primary hover:text-primary-dark transition-colors">Quiero saber más →</a>
+        </div>
+        <div class="rounded-2xl border border-black/5 bg-white p-6 card-hover">
+          <h3 class="font-semibold text-lg mb-2">Grupo Kurame</h3>
+          <p class="text-sm text-black/60 leading-relaxed">Espacio terapéutico grupal diseñado para fortalecer el sentido de comunidad y apoyo mutuo. Los participantes comparten experiencias y aprenden estrategias de afrontamiento en un ambiente seguro y confidencial.</p>
+          <a href="contacto.html" class="mt-4 inline-flex items-center gap-1 text-xs font-medium text-primary hover:text-primary-dark transition-colors">Quiero saber más →</a>
+        </div>
+        <div class="rounded-2xl border border-black/5 bg-white p-6 card-hover">
+          <h3 class="font-semibold text-lg mb-2">Grupo de habilidades</h3>
+          <p class="text-sm text-black/60 leading-relaxed">Talleres enfocados en el desarrollo de habilidades sociales, emocionales y de comunicación. Ideal para personas que buscan mejorar sus relaciones interpersonales y su capacidad de resolución de conflictos.</p>
+          <a href="contacto.html" class="mt-4 inline-flex items-center gap-1 text-xs font-medium text-primary hover:text-primary-dark transition-colors">Quiero saber más →</a>
+        </div>
+        <div class="rounded-2xl border border-black/5 bg-white p-6 card-hover">
+          <h3 class="font-semibold text-lg mb-2">Terapia grupal para ansiedad</h3>
+          <p class="text-sm text-black/60 leading-relaxed">El objetivo de la terapia de grupo es que las personas potencien entre sí el cambio de conductas y hábitos deseados para resolver determinado conflicto o trauma. Se recomienda para romper el aislamiento al que la persona recurre cuando presenta malestar emocional.</p>
+          <a href="contacto.html" class="mt-4 inline-flex items-center gap-1 text-xs font-medium text-primary hover:text-primary-dark transition-colors">Quiero saber más →</a>
+        </div>
+      </div>
+    </div>
+
+    <div id="nutricion" class="scroll-mt-24 mb-20">
+      <div class="flex items-center gap-4 mb-8">
+        <div class="service-icon" style="background:linear-gradient(135deg,#34d399,#059669)"><svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a10 10 0 0 1 10 10c0 5.52-4.48 10-10 10S2 17.52 2 12 6.48 2 12 2z"/><path d="M12 6v6l4 2"/></svg></div>
+        <div>
+          <h2 class="font-serif text-3xl font-bold">Nutrición</h2>
+          <p class="text-sm text-black/50">Tu aliado en bienestar. Servicios nutricionales integrales.</p>
+        </div>
+      </div>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div class="rounded-2xl border border-black/5 bg-white p-6 card-hover">
+          <h3 class="font-semibold text-lg mb-2">Evaluación nutricional</h3>
+          <p class="text-sm text-black/60 leading-relaxed">Análisis completo de tu estado nutricional, incluyendo composition corporal, hábitos alimentarios y necesidades específicas. Identificamos deficiencias y establecemos un plan personalizado para mejorar tu salud.</p>
+          <a href="contacto.html" class="mt-4 inline-flex items-center gap-1 text-xs font-medium text-primary hover:text-primary-dark transition-colors">Quiero saber más →</a>
+        </div>
+        <div class="rounded-2xl border border-black/5 bg-white p-6 card-hover">
+          <h3 class="font-semibold text-lg mb-2">Plan alimentario personalizado</h3>
+          <p class="text-sm text-black/60 leading-relaxed">Diseñamos un plan de alimentación adaptado a tus objetivos, estilo de vida y condiciones de salud. Ya sea que busques perder peso, ganar masa muscular o mejorar tu rendimiento, te acompañamos en el proceso.</p>
+          <a href="contacto.html" class="mt-4 inline-flex items-center gap-1 text-xs font-medium text-primary hover:text-primary-dark transition-colors">Quiero saber más →</a>
+        </div>
+        <div class="rounded-2xl border border-black/5 bg-white p-6 card-hover">
+          <h3 class="font-semibold text-lg mb-2">Nutrición clínica</h3>
+          <p class="text-sm text-black/60 leading-relaxed">Tratamiento nutricional para patologías como diabetes, hipertensión, colesterol alto, problemas digestivos y más. Trabajamos de la mano con tu médico para ofrecerte una atención integral.</p>
+          <a href="contacto.html" class="mt-4 inline-flex items-center gap-1 text-xs font-medium text-primary hover:text-primary-dark transition-colors">Quiero saber más →</a>
+        </div>
+        <div class="rounded-2xl border border-black/5 bg-white p-6 card-hover">
+          <h3 class="font-semibold text-lg mb-2">Nutrición deportiva</h3>
+          <p class="text-sm text-black/60 leading-relaxed">Optimiza tu rendimiento físico con una alimentación estratégica. Te ayudamos a alcanzar tus metas deportivas con planes de hidratación, suplementación y nutrición peri-entrenamiento.</p>
+          <a href="contacto.html" class="mt-4 inline-flex items-center gap-1 text-xs font-medium text-primary hover:text-primary-dark transition-colors">Quiero saber más →</a>
+        </div>
+      </div>
+    </div>
+
+    <div id="fisioterapia" class="scroll-mt-24 mb-20">
+      <div class="flex items-center gap-4 mb-8">
+        <div class="service-icon" style="background:linear-gradient(135deg,#f472b6,#ec4899)"><svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/></svg></div>
+        <div>
+          <h2 class="font-serif text-3xl font-bold">Terapia Física</h2>
+          <p class="text-sm text-black/50">Rehabilitación física integral y cuidado postural.</p>
+        </div>
+      </div>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div class="rounded-2xl border border-black/5 bg-white p-6 card-hover">
+          <h3 class="font-semibold text-lg mb-2">Rehabilitación física</h3>
+          <p class="text-sm text-black/60 leading-relaxed">Programas de recuperación funcional para lesiones musculoesqueléticas, postquirúrgicas y crónicas. Utilizamos técnicas avanzadas para restaurar la movilidad, fuerza y funcionalidad del paciente.</p>
+          <a href="contacto.html" class="mt-4 inline-flex items-center gap-1 text-xs font-medium text-primary hover:text-primary-dark transition-colors">Quiero saber más →</a>
+        </div>
+        <div class="rounded-2xl border border-black/5 bg-white p-6 card-hover">
+          <h3 class="font-semibold text-lg mb-2">Terapia postural</h3>
+          <p class="text-sm text-black/60 leading-relaxed">Corrección de hábitos posturales que generan dolor y limitaciones. Evaluamos tu postura en diferentes actividades y te enseñamos ejercicios específicos para mejorar tu alineación corporal.</p>
+          <a href="contacto.html" class="mt-4 inline-flex items-center gap-1 text-xs font-medium text-primary hover:text-primary-dark transition-colors">Quiero saber más →</a>
+        </div>
+        <div class="rounded-2xl border border-black/5 bg-white p-6 card-hover">
+          <h3 class="font-semibold text-lg mb-2">Dolor crónico</h3>
+          <p class="text-sm text-black/60 leading-relaxed">Tratamiento especializado para pacientes con dolor crónico de espalda, cuello, articulaciones y otras áreas. Combinamos terapia manual, ejercicios y educación para reducir el dolor y mejorar la calidad de vida.</p>
+          <a href="contacto.html" class="mt-4 inline-flex items-center gap-1 text-xs font-medium text-primary hover:text-primary-dark transition-colors">Quiero saber más →</a>
+        </div>
+        <div class="rounded-2xl border border-black/5 bg-white p-6 card-hover">
+          <h3 class="font-semibold text-lg mb-2">Piso pélvico</h3>
+          <p class="text-sm text-black/60 leading-relaxed">Rehabilitación del suelo pélvico para incontinencia urinaria, prolapsos, dolor pélvico y recuperación postparto. Tratamiento confidencial y especializado con resultados comprobados.</p>
+          <a href="contacto.html" class="mt-4 inline-flex items-center gap-1 text-xs font-medium text-primary hover:text-primary-dark transition-colors">Quiero saber más →</a>
+        </div>
+      </div>
+    </div>
+
+    <div id="cursos" class="scroll-mt-24 mb-20">
+      <div class="flex items-center gap-4 mb-8">
+        <div class="service-icon" style="background:linear-gradient(135deg,#fbbf24,#f59e0b)"><svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg></div>
+        <div>
+          <h2 class="font-serif text-3xl font-bold">Cursos y Talleres</h2>
+          <p class="text-sm text-black/50">Desarrolla tu potencial con nuestras actividades formativas.</p>
+        </div>
+      </div>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div class="rounded-2xl border border-black/5 bg-white p-6 card-hover">
+          <h3 class="font-semibold text-lg mb-2">Talleres de inteligencia emocional</h3>
+          <p class="text-sm text-black/60 leading-relaxed">Aprende a identificar, comprender y gestionar tus emociones de manera efectiva. Desarrolla habilidades para la empatía, la autorregulación y la toma de decisiones conscientes en tu vida personal y profesional.</p>
+          <a href="contacto.html" class="mt-4 inline-flex items-center gap-1 text-xs font-medium text-primary hover:text-primary-dark transition-colors">Quiero saber más →</a>
+        </div>
+        <div class="rounded-2xl border border-black/5 bg-white p-6 card-hover">
+          <h3 class="font-semibold text-lg mb-2">Cursos de manejo del estrés</h3>
+          <p class="text-sm text-black/60 leading-relaxed">Herramientas prácticas para reducir el estrés y la ansiedad en el día a día. Incluye técnicas de relajación, mindfulness, respiración y planificación efectiva del tiempo.</p>
+          <a href="contacto.html" class="mt-4 inline-flex items-center gap-1 text-xs font-medium text-primary hover:text-primary-dark transition-colors">Quiero saber más →</a>
+        </div>
+        <div class="rounded-2xl border border-black/5 bg-white p-6 card-hover">
+          <h3 class="font-semibold text-lg mb-2">Talleres para padres</h3>
+          <p class="text-sm text-black/60 leading-relaxed">Espacio de aprendizaje para padres que buscan mejorar su relación con sus hijos. Abordamos temas como crianza positiva, comunicación efectiva, límites saludables y manejo de conductas desafiantes.</p>
+          <a href="contacto.html" class="mt-4 inline-flex items-center gap-1 text-xs font-medium text-primary hover:text-primary-dark transition-colors">Quiero saber más →</a>
+        </div>
+        <div class="rounded-2xl border border-black/5 bg-white p-6 card-hover">
+          <h3 class="font-semibold text-lg mb-2">Capacitación empresarial</h3>
+          <p class="text-sm text-black/60 leading-relaxed">Programas de salud mental ocupacional para empresas y organizaciones. Incluye talleres de bienestar, prevención del burnout, comunicación asertiva y liderazgo emocional.</p>
+          <a href="contacto.html" class="mt-4 inline-flex items-center gap-1 text-xs font-medium text-primary hover:text-primary-dark transition-colors">Quiero saber más →</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Carrusel vertical de imágenes -->
+    <div class="mt-20 mb-8">
+      <div class="text-center mb-10">
+        <p class="text-xs uppercase tracking-[0.18em] text-primary font-medium">Galería</p>
+        <h2 class="mt-3 font-serif text-3xl md:text-4xl font-bold tracking-tight">Nuestras instalaciones</h2>
+        <p class="mt-3 text-sm text-black/60 max-w-md mx-auto">Conoce nuestro espacio diseñado para tu bienestar.</p>
+      </div>
+      <div class="flex gap-6 overflow-x-auto pb-4 snap-x snap-mandatory scroll-smooth -mx-6 px-6" style="scrollbar-width:none;-ms-overflow-style:none;">
+        <div class="flex-shrink-0 snap-center w-[320px] md:w-[400px]">
+          <div class="relative aspect-[4/3] rounded-2xl overflow-hidden border border-black/5 shadow-lg">
+            <img src="img/imgPsicologia/image.png" alt="Instalaciones Excelentemente 1" class="w-full h-full object-cover" loading="lazy" />
+          </div>
+          <p class="mt-3 text-sm text-center text-black/60">Sede principal</p>
+        </div>
+        <div class="flex-shrink-0 snap-center w-[320px] md:w-[400px]">
+          <div class="relative aspect-[4/3] rounded-2xl overflow-hidden border border-black/5 shadow-lg">
+            <img src="img/imgPsicologia/image copy.png" alt="Instalaciones Excelentemente 2" class="w-full h-full object-cover" loading="lazy" />
+          </div>
+          <p class="mt-3 text-sm text-center text-black/60">Área de terapia</p>
+        </div>
+        <div class="flex-shrink-0 snap-center w-[320px] md:w-[400px]">
+          <div class="relative aspect-[4/3] rounded-2xl overflow-hidden border border-black/5 shadow-lg">
+            <img src="img/imgPsicologia/image copy 2.png" alt="Instalaciones Excelentemente 3" class="w-full h-full object-cover" loading="lazy" />
+          </div>
+          <p class="mt-3 text-sm text-center text-black/60">Espacio de bienestar</p>
+        </div>
+      </div>
+      <!-- Indicadores del carrusel -->
+      <div class="flex justify-center gap-2 mt-4">
+        <button onclick="scrollCarousel(-1)" class="size-10 rounded-full border border-black/10 bg-white flex items-center justify-center text-black/50 hover:bg-primary hover:text-white hover:border-primary transition-all" aria-label="Anterior">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
+        </button>
+        <button onclick="scrollCarousel(1)" class="size-10 rounded-full border border-black/10 bg-white flex items-center justify-center text-black/50 hover:bg-primary hover:text-white hover:border-primary transition-all" aria-label="Siguiente">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+        </button>
+      </div>
+    </div>
+
+    <div class="text-center mt-16">
+      <a href="agendar.html" class="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-primary to-primary-light px-8 py-4 text-sm font-semibold text-white shadow-xl shadow-primary/20 hover:shadow-primary/30 hover:scale-105 transition-all duration-300">
+        Agendar una cita
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+      </a>
+    </div>
+  </div>
+</section>
+
+<footer class="bg-[#0f172a] text-white mt-16"><div class="max-w-[1280px] mx-auto px-6 pt-16 pb-8">
+  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 pb-12 border-b border-white/10">
+    <div><h3 class="font-serif text-2xl font-bold mb-3">Excelentemente</h3><p class="text-sm text-white/50">Centro Psicológico y Psiquiátrico.</p></div>
+    <div><h4 class="text-xs uppercase tracking-[0.2em] text-white/40 mb-4">Servicios</h4><ul class="flex flex-col gap-2.5"><li><a href="servicios.html#psicologia" class="text-sm text-white/60 hover:text-white">Psicología</a></li><li><a href="servicios.html#psiquiatria" class="text-sm text-white/60 hover:text-white">Psiquiatría</a></li><li><a href="servicios.html#terapias" class="text-sm text-white/60 hover:text-white">Terapias Grupales</a></li></ul></div>
+    <div><h4 class="text-xs uppercase tracking-[0.2em] text-white/40 mb-4">Institucional</h4><ul class="flex flex-col gap-2.5"><li><a href="nosotros.html" class="text-sm text-white/60 hover:text-white">Nosotros</a></li><li><a href="profesionales.html" class="text-sm text-white/60 hover:text-white">Profesionales</a></li><li><a href="blogs.html" class="text-sm text-white/60 hover:text-white">Blog</a></li></ul></div>
+    <div><h4 class="text-xs uppercase tracking-[0.2em] text-white/40 mb-4">Contacto</h4><ul class="flex flex-col gap-3"><li class="text-sm text-white/60">Jr. Rebagliati #166</li><li class="text-sm text-white/60">996 644 350</li></ul></div>
+  </div>
+  <div class="pt-8 flex items-center justify-between text-xs text-white/30"><p>&copy; 2026 Excelentemente</p><a href="agendar.html" class="rounded-full bg-primary px-5 py-2 font-semibold text-white hover:bg-primary-light transition-colors">Agendar cita</a></div>
+</div></footer>
+<script src="js/main.js"></script></body></html>

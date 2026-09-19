@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="es" class="bg-white">
+<head>
+  <meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Iniciar Sesión — Excelentemente</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" /><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,100..900&family=Geist:wght@100..900&display=swap" rel="stylesheet" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>tailwind.config={theme:{extend:{fontFamily:{sans:['Geist','sans-serif'],serif:['Fraunces','serif']},colors:{primary:{DEFAULT:'#1a7a6d',light:'#2aa394',dark:'#145e54'},accent:{DEFAULT:'#e8a838'}}}}}</script>
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+<body class="font-sans antialiased bg-gradient-to-br from-primary/5 via-white to-accent/5 min-h-screen flex items-center justify-center px-4">
+  <div class="w-full max-w-md">
+    <!-- Logo -->
+    <div class="text-center mb-8">
+      <a href="index.html" class="inline-block">
+        <span class="font-serif text-3xl font-bold text-primary">Excelentemente</span>
+      </a>
+      <p class="mt-2 text-sm text-black/50">Centro Psicológico y Psiquiátrico</p>
+    </div>
+
+    <!-- Card Login -->
+    <div class="bg-white rounded-3xl shadow-xl shadow-primary/5 border border-black/5 p-8">
+      <h1 class="font-serif text-2xl font-bold text-center mb-2">Bienvenido de vuelta</h1>
+      <p class="text-sm text-black/50 text-center mb-8">Inicia sesión para acceder a tu dashboard</p>
+
+      <!-- Error message -->
+      <div id="login-error" class="hidden mb-4 p-3 rounded-xl bg-red-50 border border-red-200 text-red-600 text-sm text-center"></div>
+
+      <form id="login-form" class="flex flex-col gap-4">
+        <div>
+          <label class="text-xs font-medium text-black/60 mb-1.5 block">Correo electrónico</label>
+          <input type="email" id="login-email" required placeholder="tu@correo.com"
+            class="w-full rounded-xl border border-black/10 px-4 py-3 text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/10 transition-all" />
+        </div>
+        <div>
+          <label class="text-xs font-medium text-black/60 mb-1.5 block">Contraseña</label>
+          <input type="password" id="login-password" required placeholder="••••••••"
+            class="w-full rounded-xl border border-black/10 px-4 py-3 text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/10 transition-all" />
+        </div>
+        <div class="flex items-center justify-between text-sm">
+          <label class="flex items-center gap-2 cursor-pointer">
+            <input type="checkbox" class="size-4 rounded border-black/20 text-primary accent-primary" />
+            <span class="text-black/60">Recordarme</span>
+          </label>
+          <a href="#" class="text-primary hover:text-primary-dark font-medium">¿Olvidaste tu contraseña?</a>
+        </div>
+        <button type="submit" class="mt-2 w-full rounded-xl bg-gradient-to-r from-primary to-primary-light py-3.5 text-sm font-semibold text-white shadow-lg shadow-primary/20 hover:shadow-primary/30 hover:scale-[1.02] active:scale-[0.98] transition-all duration-200">
+          Iniciar sesión
+        </button>
+      </form>
+
+      <div class="mt-6 text-center">
+        <p class="text-sm text-black/50">¿No tienes cuenta? <a href="registro.html" class="text-primary font-semibold hover:text-primary-dark">Regístrate aquí</a></p>
+      </div>
+    </div>
+
+    <!-- Volver -->
+    <p class="mt-6 text-center text-sm text-black/40">
+      <a href="index.html" class="hover:text-primary transition-colors">← Volver al inicio</a>
+    </p>
+  </div>
+
+  <script>
+    // Redirigir si ya está logueado
+    if (localStorage.getItem('excelentemente_user')) {
+      window.location.href = 'dashboard.html'
+    }
+
+    document.getElementById('login-form').addEventListener('submit', function(e) {
+      e.preventDefault()
+      const email = document.getElementById('login-email').value.trim()
+      const password = document.getElementById('login-password').value
+      const errorEl = document.getElementById('login-error')
+
+      // Obtener usuarios registrados
+      const users = JSON.parse(localStorage.getItem('excelentemente_users') || '[]')
+      const user = users.find(u => u.email === email && u.password === password)
+
+      if (user) {
+        localStorage.setItem('excelentemente_user', JSON.stringify(user))
+        window.location.href = 'dashboard.html'
+      } else {
+        errorEl.textContent = 'Correo o contraseña incorrectos. Intenta de nuevo.'
+        errorEl.classList.remove('hidden')
+      }
+    })
+  </script>
+</body>
+</html>

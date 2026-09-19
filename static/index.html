@@ -1,0 +1,561 @@
+<!DOCTYPE html>
+<html lang="es" class="bg-white">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Excelentemente — Clínica Psicológica y Psiquiátrica</title>
+  <meta name="description" content="Centro Psicológico y Psiquiátrico Excelentemente en Huancayo. Psicología, psiquiatría, terapias grupales, cursos y más. Tu salud mental es nuestra prioridad." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,100..900;1,9..144,100..900&family=Geist:wght@100..900&display=swap" rel="stylesheet" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: { sans: ['Geist','sans-serif'], serif: ['Fraunces','serif'] },
+          colors: {
+            primary: { DEFAULT:'#1a7a6d', light:'#2aa394', dark:'#145e54' },
+            accent: { DEFAULT:'#e8a838', light:'#f0c060' },
+          },
+          animation: { marquee:'marquee 40s linear infinite' },
+          keyframes: { marquee:{ '0%':{transform:'translateX(0)'},'100%':{transform:'translateX(-50%)'} } },
+        },
+      },
+    }
+  </script>
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+<body class="font-sans antialiased bg-white text-[#1a1a2e]">
+
+<!-- Header -->
+<header class="sticky top-0 z-50 bg-white/90 backdrop-blur-md border-b border-black/5 transition-shadow">
+  <div class="max-w-[1280px] mx-auto px-6 flex h-16 items-center justify-between">
+    <a href="index.html" class="font-serif text-xl font-bold tracking-tight text-primary">Excelentemente</a>
+    <nav class="hidden md:flex items-center gap-1">
+      <a href="index.html" class="text-sm text-black/70 hover:text-primary px-3 py-2 rounded-md transition-colors font-medium">Inicio</a>
+      <a href="nosotros.html" class="text-sm text-black/70 hover:text-primary px-3 py-2 rounded-md transition-colors">Nosotros</a>
+      <a href="servicios.html" class="text-sm text-black/70 hover:text-primary px-3 py-2 rounded-md transition-colors">Servicios</a>
+      <a href="profesionales.html" class="text-sm text-black/70 hover:text-primary px-3 py-2 rounded-md transition-colors">Profesionales</a>
+      <a href="blogs.html" class="text-sm text-black/70 hover:text-primary px-3 py-2 rounded-md transition-colors">Blog</a>
+      <a href="contacto.html" class="text-sm text-black/70 hover:text-primary px-3 py-2 rounded-md transition-colors">Contacto</a>
+    </nav>
+    <div class="flex items-center gap-3">
+      <a href="login.html" class="inline-flex items-center gap-2 rounded-full border border-primary/30 bg-white px-5 py-2.5 text-sm font-semibold text-primary hover:bg-primary/5 transition-all">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        Iniciar sesión
+      </a>
+      <a href="agendar.html" class="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-primary to-primary-light px-5 py-2.5 text-sm font-semibold text-white shadow-lg shadow-primary/25 hover:shadow-primary/40 hover:scale-105 transition-all duration-300">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+        Agendar
+      </a>
+      <button id="menu-btn" class="md:hidden p-2 rounded-md hover:bg-neutral-100 transition-colors" aria-label="Menú">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+      </button>
+    </div>
+  </div>
+  <!-- Mobile menu -->
+  <div id="mobile-menu" class="hidden flex-col md:hidden px-6 pb-4 gap-1">
+    <a href="index.html" class="text-sm text-primary font-medium px-3 py-2 rounded-md bg-primary/5">Inicio</a>
+    <a href="nosotros.html" class="text-sm text-black/70 hover:text-primary px-3 py-2 rounded-md">Nosotros</a>
+    <a href="servicios.html" class="text-sm text-black/70 hover:text-primary px-3 py-2 rounded-md">Servicios</a>
+    <a href="profesionales.html" class="text-sm text-black/70 hover:text-primary px-3 py-2 rounded-md">Profesionales</a>
+    <a href="blogs.html" class="text-sm text-black/70 hover:text-primary px-3 py-2 rounded-md">Blog</a>
+    <a href="contacto.html" class="text-sm text-black/70 hover:text-primary px-3 py-2 rounded-md">Contacto</a>
+    <a href="agendar.html" class="mt-2 text-center rounded-full bg-gradient-to-r from-primary to-primary-light px-5 py-2.5 text-sm font-semibold text-white">Agendar cita</a>
+    <a href="login.html" class="text-center text-sm text-primary font-semibold px-3 py-2 rounded-md border border-primary/20 mt-1">Iniciar sesión</a>
+  </div>
+</header>
+
+<!-- Hero Section -->
+<section class="relative overflow-hidden bg-gradient-to-br from-primary/5 via-white to-accent/5 py-20 md:py-32">
+  <div class="absolute top-0 right-0 w-96 h-96 bg-primary/5 rounded-full -translate-y-1/2 translate-x-1/3 blur-3xl"></div>
+  <div class="absolute bottom-0 left-0 w-64 h-64 bg-accent/5 rounded-full translate-y-1/2 -translate-x-1/3 blur-3xl"></div>
+  <div class="max-w-[1280px] mx-auto px-6 relative z-10">
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+      <!-- Texto hero -->
+      <div class="max-w-xl">
+        <div class="inline-flex items-center gap-2 rounded-full bg-primary/10 px-4 py-1.5 text-xs font-medium text-primary mb-6">
+          <span class="size-2 rounded-full bg-primary animate-pulse"></span>
+          Clínica Psicológica y Psiquiátrica
+        </div>
+        <h1 class="font-serif text-5xl md:text-7xl font-bold tracking-tight leading-[1.05] text-balance">
+          Tu bienestar emocional <span class="text-primary">comienza aquí</span>
+        </h1>
+        <p class="mt-6 text-lg text-black/60 leading-relaxed max-w-xl">
+          En Excelentemente te escuchamos, te acompañamos y caminamos contigo hacia tu bienestar emocional. 
+          No estás solo; estamos aquí para ti.
+        </p>
+        <div class="mt-8 flex flex-wrap gap-4">
+          <a href="agendar.html" class="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-primary to-primary-light px-8 py-4 text-sm font-semibold text-white shadow-xl shadow-primary/20 hover:shadow-primary/30 hover:scale-105 transition-all duration-300">
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+            Agendar una cita
+          </a>
+          <a href="servicios.html" class="inline-flex items-center gap-2 rounded-full border border-black/15 bg-white px-8 py-4 text-sm font-medium text-black hover:border-primary/30 hover:bg-primary/5 transition-all duration-300">
+            Ver servicios
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+          </a>
+        </div>
+      </div>
+      <!-- Carrusel real de imágenes -->
+      <div class="relative hidden lg:block">
+        <div id="hero-carousel" class="relative w-full aspect-[4/3] rounded-3xl overflow-hidden shadow-2xl shadow-primary/10">
+          <!-- Slide 1 -->
+          <div class="hero-slide absolute inset-0 transition-opacity duration-700 ease-in-out opacity-100" data-slide="0">
+            <img src="img/imgPsicologia/image.png" alt="Instalaciones" class="w-full h-full object-cover" />
+            <div class="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent"></div>
+            <div class="absolute bottom-6 left-6 right-6 text-white">
+              <p class="text-sm font-medium">Sede Principal</p>
+              <p class="text-xs text-white/70">El Tambo, Huancayo</p>
+            </div>
+          </div>
+          <!-- Slide 2 -->
+          <div class="hero-slide absolute inset-0 transition-opacity duration-700 ease-in-out opacity-0" data-slide="1">
+            <img src="img/imgPsicologia/image copy.png" alt="Área de terapia" class="w-full h-full object-cover" />
+            <div class="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent"></div>
+            <div class="absolute bottom-6 left-6 right-6 text-white">
+              <p class="text-sm font-medium">Área de Terapia</p>
+              <p class="text-xs text-white/70">Espacios cómodos y seguros</p>
+            </div>
+          </div>
+          <!-- Slide 3 -->
+          <div class="hero-slide absolute inset-0 transition-opacity duration-700 ease-in-out opacity-0" data-slide="2">
+            <img src="img/imgPsicologia/image copy 2.png" alt="Espacio de bienestar" class="w-full h-full object-cover" />
+            <div class="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent"></div>
+            <div class="absolute bottom-6 left-6 right-6 text-white">
+              <p class="text-sm font-medium">Espacio de Bienestar</p>
+              <p class="text-xs text-white/70">Diseñado para tu comodidad</p>
+            </div>
+          </div>
+          <!-- Slide 4 -->
+          <div class="hero-slide absolute inset-0 transition-opacity duration-700 ease-in-out opacity-0" data-slide="3">
+            <img src="img/pixel-automation.png" alt="Entorno profesional" class="w-full h-full object-cover" />
+            <div class="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent"></div>
+            <div class="absolute bottom-6 left-6 right-6 text-white">
+              <p class="text-sm font-medium">Entorno Profesional</p>
+              <p class="text-xs text-white/70">Atención de calidad</p>
+            </div>
+          </div>
+          <!-- Slide 5 -->
+          <div class="hero-slide absolute inset-0 transition-opacity duration-700 ease-in-out opacity-0" data-slide="4">
+            <img src="img/sunflower.jpg" alt="Bienestar" class="w-full h-full object-cover" />
+            <div class="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent"></div>
+            <div class="absolute bottom-6 left-6 right-6 text-white">
+              <p class="text-sm font-medium">Tu Bienestar</p>
+              <p class="text-xs text-white/70">Nuestra prioridad</p>
+            </div>
+          </div>
+        </div>
+        <!-- Flechas -->
+        <button onclick="heroCarouselNav(-1)" class="absolute left-3 top-1/2 -translate-y-1/2 size-10 rounded-full bg-white/80 backdrop-blur flex items-center justify-center text-black/60 hover:bg-white hover:text-primary transition-all shadow-lg" aria-label="Anterior">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
+        </button>
+        <button onclick="heroCarouselNav(1)" class="absolute right-3 top-1/2 -translate-y-1/2 size-10 rounded-full bg-white/80 backdrop-blur flex items-center justify-center text-black/60 hover:bg-white hover:text-primary transition-all shadow-lg" aria-label="Siguiente">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+        </button>
+        <!-- Dots -->
+        <div id="hero-dots" class="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2">
+          <button onclick="heroCarouselGo(0)" class="size-2.5 rounded-full bg-white transition-all" data-dot="0"></button>
+          <button onclick="heroCarouselGo(1)" class="size-2.5 rounded-full bg-white/40 transition-all" data-dot="1"></button>
+          <button onclick="heroCarouselGo(2)" class="size-2.5 rounded-full bg-white/40 transition-all" data-dot="2"></button>
+          <button onclick="heroCarouselGo(3)" class="size-2.5 rounded-full bg-white/40 transition-all" data-dot="3"></button>
+          <button onclick="heroCarouselGo(4)" class="size-2.5 rounded-full bg-white/40 transition-all" data-dot="4"></button>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Services Preview -->
+<section class="py-20 bg-white">
+  <div class="max-w-[1280px] mx-auto px-6">
+    <div class="text-center mb-12">
+      <p class="text-xs uppercase tracking-[0.18em] text-primary font-medium">Nuestros Servicios</p>
+      <h2 class="mt-3 font-serif text-3xl md:text-4xl font-bold tracking-tight text-balance">
+        Cuidamos tu salud mental
+      </h2>
+      <p class="mt-3 text-sm text-black/60 max-w-md mx-auto">
+        Recupera tu equilibrio emocional con apoyo profesional en psicología y psiquiatría.
+      </p>
+    </div>
+    <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+      <a href="servicios.html#psiquiatria" class="group flex flex-col items-center gap-3 rounded-2xl border border-black/5 bg-white p-5 text-center card-hover hover:border-primary/20">
+        <div class="service-icon">
+          <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+        </div>
+        <span class="text-sm font-semibold group-hover:text-primary transition-colors">Psiquiatría</span>
+      </a>
+      <a href="servicios.html#psicologia" class="group flex flex-col items-center gap-3 rounded-2xl border border-black/5 bg-white p-5 text-center card-hover hover:border-primary/20">
+        <div class="service-icon" style="background:linear-gradient(135deg,#2aa394,#1a7a6d)">
+          <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+        </div>
+        <span class="text-sm font-semibold group-hover:text-primary transition-colors">Psicología</span>
+      </a>
+      <a href="servicios.html#nutricion" class="group flex flex-col items-center gap-3 rounded-2xl border border-black/5 bg-white p-5 text-center card-hover hover:border-primary/20">
+        <div class="service-icon" style="background:linear-gradient(135deg,#34d399,#059669)">
+          <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a10 10 0 0 1 10 10c0 5.52-4.48 10-10 10S2 17.52 2 12 6.48 2 12 2z"/><path d="M12 6v6l4 2"/></svg>
+        </div>
+        <span class="text-sm font-semibold group-hover:text-primary transition-colors">Nutrición</span>
+      </a>
+      <a href="servicios.html#fisioterapia" class="group flex flex-col items-center gap-3 rounded-2xl border border-black/5 bg-white p-5 text-center card-hover hover:border-primary/20">
+        <div class="service-icon" style="background:linear-gradient(135deg,#f472b6,#ec4899)">
+          <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/></svg>
+        </div>
+        <span class="text-sm font-semibold group-hover:text-primary transition-colors">Terapia Física</span>
+      </a>
+      <a href="servicios.html#cursos" class="group flex flex-col items-center gap-3 rounded-2xl border border-black/5 bg-white p-5 text-center card-hover hover:border-primary/20">
+        <div class="service-icon" style="background:linear-gradient(135deg,#fbbf24,#f59e0b)">
+          <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+        </div>
+        <span class="text-sm font-semibold group-hover:text-primary transition-colors">Cursos y Talleres</span>
+      </a>
+      <a href="servicios.html#terapias" class="group flex flex-col items-center gap-3 rounded-2xl border border-black/5 bg-white p-5 text-center card-hover hover:border-primary/20">
+        <div class="service-icon" style="background:linear-gradient(135deg,#a78bfa,#7c3aed)">
+          <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        </div>
+        <span class="text-sm font-semibold group-hover:text-primary transition-colors">Terapias Grupales</span>
+      </a>
+    </div>
+    <div class="text-center mt-8">
+      <a href="servicios.html" class="inline-flex items-center gap-2 text-sm font-medium text-primary hover:text-primary-dark transition-colors">
+        Ver todos los servicios
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- 3 Steps Process -->
+<section class="py-20 bg-gradient-to-b from-primary/5 to-white">
+  <div class="max-w-[1280px] mx-auto px-6">
+    <div class="text-center mb-16">
+      <p class="text-xs uppercase tracking-[0.18em] text-primary font-medium">Proceso simple</p>
+      <h2 class="mt-3 font-serif text-3xl md:text-4xl font-bold tracking-tight">
+        Transforma tu vida en 3 pasos
+      </h2>
+    </div>
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+      <div class="relative text-center p-8 rounded-2xl bg-white border border-black/5 card-hover">
+        <div class="inline-flex items-center justify-center size-12 rounded-full bg-primary/10 text-primary font-bold text-lg mb-4">1</div>
+        <h3 class="font-serif text-xl font-bold mb-3">Agenda tu Sesión</h3>
+        <p class="text-sm text-black/60 leading-relaxed">Consulta los horarios disponibles y elige al profesional que mejor se adapte a tus necesidades. Todo fácil y rápido.</p>
+      </div>
+      <div class="relative text-center p-8 rounded-2xl bg-white border border-black/5 card-hover">
+        <div class="inline-flex items-center justify-center size-12 rounded-full bg-primary/10 text-primary font-bold text-lg mb-4">2</div>
+        <h3 class="font-serif text-xl font-bold mb-3">Evaluación Personalizada</h3>
+        <p class="text-sm text-black/60 leading-relaxed">Tu primer encuentro para conocernos. Entendemos tu situación y definimos juntos tus objetivos de terapia.</p>
+      </div>
+      <div class="relative text-center p-8 rounded-2xl bg-white border border-black/5 card-hover">
+        <div class="inline-flex items-center justify-center size-12 rounded-full bg-primary/10 text-primary font-bold text-lg mb-4">3</div>
+        <h3 class="font-serif text-xl font-bold mb-3">Acompañamiento y Crecimiento</h3>
+        <p class="text-sm text-black/60 leading-relaxed">Iniciamos tu proceso terapéutico con un plan a tu medida, brindándote las herramientas para tu transformación.</p>
+      </div>
+    </div>
+    <div class="text-center mt-10">
+      <a href="agendar.html" class="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-primary to-primary-light px-8 py-4 text-sm font-semibold text-white shadow-xl shadow-primary/20 hover:shadow-primary/30 hover:scale-105 transition-all duration-300">
+        Quiero empezar ahora
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- Specialties Carousel -->
+<section class="py-20 bg-white">
+  <div class="max-w-[1280px] mx-auto px-6">
+    <div class="text-center mb-12">
+      <p class="text-xs uppercase tracking-[0.18em] text-primary font-medium">Especialidades</p>
+      <h2 class="mt-3 font-serif text-3xl md:text-4xl font-bold tracking-tight">
+        Nuestras especialidades
+      </h2>
+    </div>
+    <div class="overflow-x-auto pb-4 -mx-6 px-6">
+      <div class="flex gap-6 min-w-max">
+        <div class="w-72 flex-shrink-0 rounded-2xl border border-black/5 bg-white overflow-hidden card-hover">
+          <div class="h-40 bg-gradient-to-br from-primary/10 to-primary/5 flex items-center justify-center">
+            <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="text-primary/40"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+          </div>
+          <div class="p-5">
+            <h3 class="font-semibold text-[15px]">Orientación psicológica</h3>
+            <p class="mt-2 text-[13px] text-black/55 leading-relaxed line-clamp-3">Promovemos el crecimiento personal con un rol de orientador en el proceso terapéutico.</p>
+            <a href="servicios.html#psicologia" class="mt-3 inline-flex items-center gap-1 text-xs font-medium text-primary hover:text-primary-dark transition-colors">Quiero saber más →</a>
+          </div>
+        </div>
+        <div class="w-72 flex-shrink-0 rounded-2xl border border-black/5 bg-white overflow-hidden card-hover">
+          <div class="h-40 bg-gradient-to-br from-accent/10 to-accent/5 flex items-center justify-center">
+            <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="text-accent/40"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+          </div>
+          <div class="p-5">
+            <h3 class="font-semibold text-[15px]">Psicoterapia individual</h3>
+            <p class="mt-2 text-[13px] text-black/55 leading-relaxed line-clamp-3">Te ayudamos a entender tus emociones y mejorar tu capacidad para tomar decisiones.</p>
+            <a href="servicios.html#psiquiatria" class="mt-3 inline-flex items-center gap-1 text-xs font-medium text-primary hover:text-primary-dark transition-colors">Quiero saber más →</a>
+          </div>
+        </div>
+        <div class="w-72 flex-shrink-0 rounded-2xl border border-black/5 bg-white overflow-hidden card-hover">
+          <div class="h-40 bg-gradient-to-br from-rose-100 to-rose-50 flex items-center justify-center">
+            <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="text-rose-300"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+          </div>
+          <div class="p-5">
+            <h3 class="font-semibold text-[15px]">Terapia de pareja</h3>
+            <p class="mt-2 text-[13px] text-black/55 leading-relaxed line-clamp-3">Mejoramos la calidad de vida de tu relación con acompañamiento profesional.</p>
+            <a href="servicios.html#psicologia" class="mt-3 inline-flex items-center gap-1 text-xs font-medium text-primary hover:text-primary-dark transition-colors">Quiero saber más →</a>
+          </div>
+        </div>
+        <div class="w-72 flex-shrink-0 rounded-2xl border border-black/5 bg-white overflow-hidden card-hover">
+          <div class="h-40 bg-gradient-to-br from-violet-100 to-violet-50 flex items-center justify-center">
+            <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="text-violet-300"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+          </div>
+          <div class="p-5">
+            <h3 class="font-semibold text-[15px]">Psicoterapia familiar</h3>
+            <p class="mt-2 text-[13px] text-black/55 leading-relaxed line-clamp-3">Identificamos patrones de relación que no son sanos para el desarrollo personal.</p>
+            <a href="servicios.html#psicologia" class="mt-3 inline-flex items-center gap-1 text-xs font-medium text-primary hover:text-primary-dark transition-colors">Quiero saber más →</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Testimonials -->
+<section class="py-20 bg-white">
+  <div class="max-w-[1280px] mx-auto px-6">
+    <div class="text-center mb-12">
+      <p class="text-xs uppercase tracking-[0.18em] text-primary font-medium">Testimonios</p>
+      <h2 class="mt-3 font-serif text-3xl md:text-4xl font-bold tracking-tight">
+        Conoce la opinión de nuestros pacientes
+      </h2>
+    </div>
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div class="rounded-2xl border border-black/5 bg-white p-6 card-hover">
+        <div class="flex gap-1 text-amber-400 mb-3">
+          <span>&#9733;</span><span>&#9733;</span><span>&#9733;</span><span>&#9733;</span><span>&#9733;</span>
+        </div>
+        <p class="text-sm text-black/65 leading-relaxed italic">"Muy buena atención por parte de todo el equipo, me ayudó mucho con mi hijo. Gracias al Doctor Barzola y su equipo."</p>
+        <div class="mt-4 flex items-center gap-3">
+          <div class="size-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-sm">KR</div>
+          <div>
+            <div class="text-sm font-semibold">Karla Rubina</div>
+            <div class="text-xs text-black/40">Paciente</div>
+          </div>
+        </div>
+      </div>
+      <div class="rounded-2xl border border-black/5 bg-white p-6 card-hover">
+        <div class="flex gap-1 text-amber-400 mb-3">
+          <span>&#9733;</span><span>&#9733;</span><span>&#9733;</span><span>&#9733;</span><span>&#9733;</span>
+        </div>
+        <p class="text-sm text-black/65 leading-relaxed italic">"Excelente Staff de profesionales, los necesitamos. Gracias por contribuir con nuestra sociedad."</p>
+        <div class="mt-4 flex items-center gap-3">
+          <div class="size-10 rounded-full bg-accent/10 flex items-center justify-center text-accent font-bold text-sm">CM</div>
+          <div>
+            <div class="text-sm font-semibold">Cintia Morales Dextre</div>
+            <div class="text-xs text-black/40">Paciente</div>
+          </div>
+        </div>
+      </div>
+      <div class="rounded-2xl border border-black/5 bg-white p-6 card-hover">
+        <div class="flex gap-1 text-amber-400 mb-3">
+          <span>&#9733;</span><span>&#9733;</span><span>&#9733;</span><span>&#9733;</span><span>&#9733;</span>
+        </div>
+        <p class="text-sm text-black/65 leading-relaxed italic">"Me siento muy agradecido por la paciencia que tienen en los talleres del Adulto mayor, que tengo el gusto de asistir yo y mi Sra."</p>
+        <div class="mt-4 flex items-center gap-3">
+          <div class="size-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-sm">JE</div>
+          <div>
+            <div class="text-sm font-semibold">Jorge Eber Espinoza</div>
+            <div class="text-xs text-black/40">Paciente</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Online Tests CTA -->
+<section class="py-16 bg-gradient-to-r from-primary to-primary-light">
+  <div class="max-w-[1280px] mx-auto px-6 text-center text-white">
+    <h2 class="font-serif text-3xl md:text-4xl font-bold tracking-tight">
+      Realízate una prueba de salud mental
+    </h2>
+    <p class="mt-4 text-white/80 max-w-lg mx-auto">
+      Explora tu bienestar emocional con nuestras pruebas. Realízate un test de depresión, ansiedad y adicciones.
+    </p>
+    <div class="mt-8 flex flex-wrap justify-center gap-4">
+      <a href="tests.html" class="inline-flex items-center gap-2 rounded-full bg-white px-6 py-3 text-sm font-semibold text-primary shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-300">
+        Test de Depresión
+      </a>
+      <a href="tests.html" class="inline-flex items-center gap-2 rounded-full bg-white/20 backdrop-blur-sm px-6 py-3 text-sm font-semibold text-white border border-white/30 hover:bg-white/30 transition-all duration-300">
+        Test de Ansiedad
+      </a>
+      <a href="tests.html" class="inline-flex items-center gap-2 rounded-full bg-white/20 backdrop-blur-sm px-6 py-3 text-sm font-semibold text-white border border-white/30 hover:bg-white/30 transition-all duration-300">
+        Test de Adicción
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- Blog Preview -->
+<section class="py-20 bg-white">
+  <div class="max-w-[1280px] mx-auto px-6">
+    <div class="text-center mb-12">
+      <p class="text-xs uppercase tracking-[0.18em] text-primary font-medium">Blog</p>
+      <h2 class="mt-3 font-serif text-3xl md:text-4xl font-bold tracking-tight">
+        Últimas noticias
+      </h2>
+    </div>
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <article class="group rounded-2xl border border-black/5 bg-white overflow-hidden card-hover">
+        <div class="aspect-[16/10] bg-gradient-to-br from-primary/10 to-primary/5 flex items-center justify-center text-4xl">🧠</div>
+        <div class="p-5">
+          <p class="text-[11px] text-primary uppercase tracking-wider font-medium">Psicología</p>
+          <h3 class="mt-2 font-semibold text-[15px] leading-snug text-balance group-hover:text-primary transition-colors">Cómo cuidar tu salud mental en el trabajo y evitar el desgaste emocional</h3>
+          <div class="mt-3 flex items-center gap-2 text-xs text-black/40"><span>30 de abril de 2026</span></div>
+        </div>
+      </article>
+      <article class="group rounded-2xl border border-black/5 bg-white overflow-hidden card-hover">
+        <div class="aspect-[16/10] bg-gradient-to-br from-accent/10 to-accent/5 flex items-center justify-center text-4xl">💭</div>
+        <div class="p-5">
+          <p class="text-[11px] text-primary uppercase tracking-wider font-medium">Psicología</p>
+          <h3 class="mt-2 font-semibold text-[15px] leading-snug text-balance group-hover:text-primary transition-colors">¿Qué es la ansiedad y cómo se trata en Perú?</h3>
+          <div class="mt-3 flex items-center gap-2 text-xs text-black/40"><span>20 de enero de 2026</span></div>
+        </div>
+      </article>
+      <article class="group rounded-2xl border border-black/5 bg-white overflow-hidden card-hover">
+        <div class="aspect-[16/10] bg-gradient-to-br from-rose-100 to-rose-50 flex items-center justify-center text-4xl">🎃</div>
+        <div class="p-5">
+          <p class="text-[11px] text-primary uppercase tracking-wider font-medium">Psicología</p>
+          <h3 class="mt-2 font-semibold text-[15px] leading-snug text-balance group-hover:text-primary transition-colors">Halloween y la psicología del miedo: por qué disfrutamos asustarnos</h3>
+          <div class="mt-3 flex items-center gap-2 text-xs text-black/40"><span>18 de octubre de 2025</span></div>
+        </div>
+      </article>
+    </div>
+    <div class="text-center mt-8">
+      <a href="blogs.html" class="inline-flex items-center gap-2 text-sm font-medium text-primary hover:text-primary-dark transition-colors">
+        Ver todos los artículos
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- Final CTA -->
+<section class="py-20 bg-gradient-to-br from-primary/5 via-white to-accent/5">
+  <div class="max-w-3xl mx-auto px-6 text-center">
+    <h2 class="font-serif text-4xl md:text-5xl font-bold tracking-tight text-balance">
+      Tu historia merece un nuevo comienzo
+    </h2>
+    <p class="mt-6 text-lg text-black/60 leading-relaxed">
+      No estás solo(a). En Excelentemente te ayudamos a transformar el dolor en fortaleza y el miedo en confianza. Tu bienestar comienza aquí.
+    </p>
+    <div class="mt-8">
+      <a href="agendar.html" class="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-primary to-primary-light px-10 py-4 text-base font-semibold text-white shadow-xl shadow-primary/20 hover:shadow-primary/30 hover:scale-105 transition-all duration-300 animate-pulse-glow">
+        Agenda tu cita hoy
+        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- Footer -->
+<footer class="bg-[#0f172a] text-white">
+  <!-- Marquee -->
+  <div class="border-b border-white/10 py-3 overflow-hidden">
+    <div class="flex w-max animate-marquee gap-12 whitespace-nowrap text-xs font-medium uppercase tracking-[0.25em] text-white/30">
+      <span>Salud Mental</span><span>&#10022;</span>
+      <span>Psicología</span><span>&#10022;</span>
+      <span>Psiquiatría</span><span>&#10022;</span>
+      <span>Bienestar Emocional</span><span>&#10022;</span>
+      <span>Huancayo</span><span>&#10022;</span>
+      <span>Terapia</span><span>&#10022;</span>
+      <span>Excelentemente</span><span>&#10022;</span>
+      <span>Salud Mental</span><span>&#10022;</span>
+      <span>Psicología</span><span>&#10022;</span>
+      <span>Psiquiatría</span><span>&#10022;</span>
+      <span>Bienestar Emocional</span><span>&#10022;</span>
+      <span>Huancayo</span><span>&#10022;</span>
+      <span>Terapia</span><span>&#10022;</span>
+      <span>Excelentemente</span><span>&#10022;</span>
+    </div>
+  </div>
+
+  <div class="max-w-[1280px] mx-auto px-6 pt-16 pb-8">
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 pb-12 border-b border-white/10">
+      <!-- Brand -->
+      <div>
+        <h3 class="font-serif text-2xl font-bold text-white mb-3">Excelentemente</h3>
+        <p class="text-sm text-white/50 leading-relaxed">Centro Psicológico y Psiquiátrico. Tu salud mental es nuestra prioridad.</p>
+        <div class="mt-4 flex gap-3">
+          <a href="https://www.facebook.com/excelentementepsicologia/" target="_blank" class="size-9 rounded-full bg-white/10 flex items-center justify-center text-white/60 hover:bg-primary hover:text-white transition-all" aria-label="Facebook">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
+          </a>
+          <a href="https://www.instagram.com/excelentemente.psicologia/" target="_blank" class="size-9 rounded-full bg-white/10 flex items-center justify-center text-white/60 hover:bg-primary hover:text-white transition-all" aria-label="Instagram">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z"/></svg>
+          </a>
+          <a href="https://www.tiktok.com/@excelentementepsicologia" target="_blank" class="size-9 rounded-full bg-white/10 flex items-center justify-center text-white/60 hover:bg-primary hover:text-white transition-all" aria-label="TikTok">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M19.59 6.69a4.83 4.83 0 01-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 01-2.88 2.5 2.89 2.89 0 01-2.89-2.89 2.89 2.89 0 012.89-2.89c.28 0 .54.04.79.1v-3.5a6.37 6.37 0 00-.79-.05A6.34 6.34 0 003.15 15.2a6.34 6.34 0 006.34 6.34 6.34 6.34 0 006.34-6.34V8.56a8.27 8.27 0 004.76 1.5v-3.4a4.85 4.85 0 01-1-.17z"/></svg>
+          </a>
+          <a href="https://wa.link/pm5ri7" target="_blank" class="size-9 rounded-full bg-white/10 flex items-center justify-center text-white/60 hover:bg-green-600 hover:text-white transition-all" aria-label="WhatsApp">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+          </a>
+        </div>
+      </div>
+
+      <!-- Links -->
+      <div>
+        <h4 class="text-xs uppercase tracking-[0.2em] text-white/40 mb-4">Servicios</h4>
+        <ul class="flex flex-col gap-2.5">
+          <li><a href="servicios.html#psicologia" class="text-sm text-white/60 hover:text-white transition-colors">Psicología</a></li>
+          <li><a href="servicios.html#psiquiatria" class="text-sm text-white/60 hover:text-white transition-colors">Psiquiatría</a></li>
+          <li><a href="servicios.html#terapias" class="text-sm text-white/60 hover:text-white transition-colors">Terapias Grupales</a></li>
+          <li><a href="servicios.html#cursos" class="text-sm text-white/60 hover:text-white transition-colors">Cursos y Talleres</a></li>
+          <li><a href="servicios.html#nutricion" class="text-sm text-white/60 hover:text-white transition-colors">Nutrición</a></li>
+          <li><a href="servicios.html#fisioterapia" class="text-sm text-white/60 hover:text-white transition-colors">Terapia Física</a></li>
+        </ul>
+      </div>
+
+      <div>
+        <h4 class="text-xs uppercase tracking-[0.2em] text-white/40 mb-4">Institucional</h4>
+        <ul class="flex flex-col gap-2.5">
+          <li><a href="nosotros.html" class="text-sm text-white/60 hover:text-white transition-colors">Nosotros</a></li>
+          <li><a href="profesionales.html" class="text-sm text-white/60 hover:text-white transition-colors">Profesionales</a></li>
+          <li><a href="blogs.html" class="text-sm text-white/60 hover:text-white transition-colors">Blog</a></li>
+          <li><a href="tests.html" class="text-sm text-white/60 hover:text-white transition-colors">Pruebas Online</a></li>
+          <li><a href="contacto.html" class="text-sm text-white/60 hover:text-white transition-colors">Contacto</a></li>
+        </ul>
+      </div>
+
+      <!-- Contact -->
+      <div>
+        <h4 class="text-xs uppercase tracking-[0.2em] text-white/40 mb-4">Contacto</h4>
+        <ul class="flex flex-col gap-3">
+          <li class="flex items-start gap-2 text-sm text-white/60">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="mt-0.5 shrink-0 text-primary"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+            Jr. Rebagliati #166, El Tambo, Huancayo
+          </li>
+          <li class="flex items-start gap-2 text-sm text-white/60">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="mt-0.5 shrink-0 text-primary"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+            996 644 350 / 976 577 368
+          </li>
+          <li class="flex items-start gap-2 text-sm text-white/60">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="mt-0.5 shrink-0 text-primary"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+            excelentementeinformes@gmail.com
+          </li>
+          <li class="flex items-start gap-2 text-sm text-white/60">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="mt-0.5 shrink-0 text-primary"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            Lunes a Sábado: 8:00 am - 8:00 pm
+          </li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="pt-8 flex flex-col md:flex-row items-center justify-between gap-4 text-xs text-white/30">
+      <p>&copy; 2026 Excelentemente. Todos los derechos reservados.</p>
+      <a href="agendar.html" class="inline-flex items-center gap-2 rounded-full bg-primary px-5 py-2 text-xs font-semibold text-white hover:bg-primary-light transition-colors">
+        Agendar cita
+        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+      </a>
+    </div>
+  </div>
+</footer>
+
+<script src="js/main.js"></script>
+</body>
+</html>

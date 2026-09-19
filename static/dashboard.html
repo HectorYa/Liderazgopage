@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="es" class="bg-white">
+<head>
+  <meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Mi Dashboard — Excelentemente</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" /><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,100..900&family=Geist:wght@100..900&display=swap" rel="stylesheet" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>tailwind.config={theme:{extend:{fontFamily:{sans:['Geist','sans-serif'],serif:['Fraunces','serif']},colors:{primary:{DEFAULT:'#1a7a6d',light:'#2aa394',dark:'#145e54'},accent:{DEFAULT:'#e8a838'}}}}}</script>
+  <link rel="stylesheet" href="css/styles.css" />
+  <style>
+    .dash-section { display: none; }
+    .dash-section.active { display: block; }
+    .nav-item.active { background: rgba(26,122,109,0.1); color: #1a7a6d; font-weight: 600; }
+    .star { cursor: pointer; transition: color 0.15s; }
+    .star:hover, .star.active { color: #e8a838; }
+    @media (max-width: 1023px) {
+      .dash-sidebar { transform: translateX(-100%); transition: transform 0.3s; position: fixed; z-index: 50; }
+      .dash-sidebar.open { transform: translateX(0); }
+    }
+  </style>
+</head>
+<body class="font-sans antialiased bg-gray-50 text-[#1a1a2e]">
+
+<!-- Header Dashboard -->
+<header class="sticky top-0 z-40 bg-white/90 backdrop-blur-md border-b border-black/5 shadow-sm">
+  <div class="flex h-16 items-center justify-between px-4 lg:px-6">
+    <div class="flex items-center gap-3">
+      <button onclick="toggleSidebar()" class="lg:hidden size-9 rounded-lg border border-black/10 flex items-center justify-center text-black/50 hover:bg-black/5">
+        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+      </button>
+      <a href="index.html" class="font-serif text-xl font-bold text-primary">Excelentemente</a>
+    </div>
+    <div class="flex items-center gap-3">
+      <div id="user-avatar" class="size-9 rounded-full bg-primary/10 text-primary flex items-center justify-center text-sm font-bold"></div>
+      <span id="user-name-header" class="text-sm font-medium hidden sm:block"></span>
+      <button onclick="logout()" class="text-xs text-black/40 hover:text-red-500 transition-colors ml-2" title="Cerrar sesión">
+        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+      </button>
+    </div>
+  </div>
+</header>
+
+<div class="flex min-h-[calc(100vh-64px)]">
+  <!-- Sidebar -->
+  <aside id="dash-sidebar" class="dash-sidebar w-64 bg-white border-r border-black/5 p-4 lg:p-6 flex flex-col gap-1 lg:sticky lg:top-16 lg:h-[calc(100vh-64px)] lg:shrink-0">
+    <p class="text-[10px] uppercase tracking-[0.2em] text-black/30 font-medium mb-3 px-3">Menú</p>
+    <button onclick="showSection('historial')" class="nav-item active flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm text-black/60 hover:bg-primary/5 hover:text-primary transition-all" data-nav="historial">
+      <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+      Historial de citas
+    </button>
+    <button onclick="showSection('servicios')" class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm text-black/60 hover:bg-primary/5 hover:text-primary transition-all" data-nav="servicios">
+      <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
+      Catálogo de servicios
+    </button>
+    <button onclick="showSection('profesionales')" class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm text-black/60 hover:bg-primary/5 hover:text-primary transition-all" data-nav="profesionales">
+      <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+      Profesionales
+    </button>
+    <button onclick="showSection('perfil')" class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm text-black/60 hover:bg-primary/5 hover:text-primary transition-all" data-nav="perfil">
+      <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+      Mi perfil
+    </button>
+    <div class="mt-auto pt-4 border-t border-black/5">
+      <a href="index.html" class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm text-black/40 hover:bg-black/5 hover:text-black/60 transition-all">
+        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>
+        Volver al sitio
+      </a>
+    </div>
+  </aside>
+
+  <!-- Overlay mobile -->
+  <div id="sidebar-overlay" class="fixed inset-0 bg-black/30 z-40 hidden lg:hidden" onclick="toggleSidebar()"></div>
+
+  <!-- Contenido principal -->
+  <main class="flex-1 p-4 lg:p-8 overflow-x-hidden">
+
+    <!-- ========== HISTORIAL ========== -->
+    <section id="sec-historial" class="dash-section active">
+      <div class="mb-8">
+        <h1 class="font-serif text-3xl font-bold">Historial de citas</h1>
+        <p class="text-sm text-black/50 mt-1">Tus citas pasadas y próximas</p>
+      </div>
+
+      <!-- Próximas citas -->
+      <div class="mb-8">
+        <h2 class="text-xs uppercase tracking-[0.18em] text-primary font-semibold mb-4">Próximas citas</h2>
+        <div id="proximas-citas" class="flex flex-col gap-3">
+          <!-- Se llena con JS -->
+        </div>
+        <p id="no-proximas" class="hidden text-sm text-black/40 bg-white rounded-2xl border border-black/5 p-8 text-center">No tienes citas programadas. <a href="#" onclick="showSection('servicios')" class="text-primary font-medium">Agenda una cita</a></p>
+      </div>
+
+      <!-- Citas pasadas -->
+      <div>
+        <h2 class="text-xs uppercase tracking-[0.18em] text-black/40 font-semibold mb-4">Citas pasadas</h2>
+        <div id="pasadas-citas" class="flex flex-col gap-3">
+          <!-- Se llena con JS -->
+        </div>
+        <p id="no-pasadas" class="hidden text-sm text-black/40 bg-white rounded-2xl border border-black/5 p-8 text-center">Aún no tienes citas en tu historial.</p>
+      </div>
+    </section>
+
+    <!-- ========== SERVICIOS ========== -->
+    <section id="sec-servicios" class="dash-section">
+      <div class="mb-8">
+        <h1 class="font-serif text-3xl font-bold">Catálogo de servicios</h1>
+        <p class="text-sm text-black/50 mt-1">Explora nuestros servicios con descripción detallada</p>
+      </div>
+
+      <!-- Filtro -->
+      <div class="flex flex-wrap gap-2 mb-8">
+        <button onclick="filterServices('all')" class="filter-btn active px-4 py-2 rounded-full text-xs font-medium border border-primary bg-primary text-white transition-all" data-filter="all">Todos</button>
+        <button onclick="filterServices('psiquiatria')" class="filter-btn px-4 py-2 rounded-full text-xs font-medium border border-black/10 text-black/60 hover:border-primary hover:text-primary transition-all" data-filter="psiquiatria">Psiquiatría</button>
+        <button onclick="filterServices('psicologia')" class="filter-btn px-4 py-2 rounded-full text-xs font-medium border border-black/10 text-black/60 hover:border-primary hover:text-primary transition-all" data-filter="psicologia">Psicología</button>
+        <button onclick="filterServices('terapias')" class="filter-btn px-4 py-2 rounded-full text-xs font-medium border border-black/10 text-black/60 hover:border-primary hover:text-primary transition-all" data-filter="terapias">Terapias Grupales</button>
+        <button onclick="filterServices('nutricion')" class="filter-btn px-4 py-2 rounded-full text-xs font-medium border border-black/10 text-black/60 hover:border-primary hover:text-primary transition-all" data-filter="nutricion">Nutrición</button>
+        <button onclick="filterServices('fisioterapia')" class="filter-btn px-4 py-2 rounded-full text-xs font-medium border border-black/10 text-black/60 hover:border-primary hover:text-primary transition-all" data-filter="fisioterapia">Fisioterapia</button>
+        <button onclick="filterServices('cursos')" class="filter-btn px-4 py-2 rounded-full text-xs font-medium border border-black/10 text-black/60 hover:border-primary hover:text-primary transition-all" data-filter="cursos">Cursos</button>
+      </div>
+
+      <div id="services-grid" class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <!-- Se llena con JS -->
+      </div>
+    </section>
+
+    <!-- ========== PROFESIONALES ========== -->
+    <section id="sec-profesionales" class="dash-section">
+      <div class="mb-8">
+        <h1 class="font-serif text-3xl font-bold">Nuestros profesionales</h1>
+        <p class="text-sm text-black/50 mt-1">Conoce a nuestro equipo y agenda con el profesional ideal</p>
+      </div>
+      <div id="profs-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <!-- Se llena con JS -->
+      </div>
+    </section>
+
+    <!-- ========== MI PERFIL ========== -->
+    <section id="sec-perfil" class="dash-section">
+      <div class="mb-8">
+        <h1 class="font-serif text-3xl font-bold">Mi perfil</h1>
+        <p class="text-sm text-black/50 mt-1">Administra tus datos personales</p>
+      </div>
+      <div class="bg-white rounded-3xl border border-black/5 p-6 lg:p-8 max-w-2xl">
+        <form id="profile-form" class="flex flex-col gap-5">
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label class="text-xs font-medium text-black/60 mb-1.5 block">Nombre</label>
+              <input type="text" id="prof-name" class="w-full rounded-xl border border-black/10 px-4 py-3 text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/10 transition-all" />
+            </div>
+            <div>
+              <label class="text-xs font-medium text-black/60 mb-1.5 block">Apellido</label>
+              <input type="text" id="prof-lastname" class="w-full rounded-xl border border-black/10 px-4 py-3 text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/10 transition-all" />
+            </div>
+          </div>
+          <div>
+            <label class="text-xs font-medium text-black/60 mb-1.5 block">Correo electrónico</label>
+            <input type="email" id="prof-email" class="w-full rounded-xl border border-black/10 px-4 py-3 text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/10 transition-all" />
+          </div>
+          <div>
+            <label class="text-xs font-medium text-black/60 mb-1.5 block">Teléfono</label>
+            <input type="tel" id="prof-phone" class="w-full rounded-xl border border-black/10 px-4 py-3 text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/10 transition-all" />
+          </div>
+          <div>
+            <label class="text-xs font-medium text-black/60 mb-1.5 block">Nueva contraseña (dejar vacío para no cambiar)</label>
+            <input type="password" id="prof-newpass" placeholder="••••••••" class="w-full rounded-xl border border-black/10 px-4 py-3 text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/10 transition-all" />
+          </div>
+          <div id="profile-msg" class="hidden text-sm text-center p-3 rounded-xl"></div>
+          <button type="submit" class="w-full sm:w-auto rounded-xl bg-gradient-to-r from-primary to-primary-light px-8 py-3 text-sm font-semibold text-white shadow-lg shadow-primary/20 hover:shadow-primary/30 hover:scale-[1.02] active:scale-[0.98] transition-all duration-200">
+            Guardar cambios
+          </button>
+        </form>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<script src="js/main.js"></script>
+<script src="js/dashboard.js"></script>
+</body>
+</html>

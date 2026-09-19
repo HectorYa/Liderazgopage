@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="es" class="bg-white">
+<head>
+  <meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Registro — Excelentemente</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" /><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,100..900&family=Geist:wght@100..900&display=swap" rel="stylesheet" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>tailwind.config={theme:{extend:{fontFamily:{sans:['Geist','sans-serif'],serif:['Fraunces','serif']},colors:{primary:{DEFAULT:'#1a7a6d',light:'#2aa394',dark:'#145e54'},accent:{DEFAULT:'#e8a838'}}}}}</script>
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+<body class="font-sans antialiased bg-gradient-to-br from-primary/5 via-white to-accent/5 min-h-screen flex items-center justify-center px-4">
+  <div class="w-full max-w-md">
+    <div class="text-center mb-8">
+      <a href="index.html" class="inline-block">
+        <span class="font-serif text-3xl font-bold text-primary">Excelentemente</span>
+      </a>
+      <p class="mt-2 text-sm text-black/50">Centro Psicológico y Psiquiátrico</p>
+    </div>
+
+    <div class="bg-white rounded-3xl shadow-xl shadow-primary/5 border border-black/5 p-8">
+      <h1 class="font-serif text-2xl font-bold text-center mb-2">Crear cuenta</h1>
+      <p class="text-sm text-black/50 text-center mb-8">Regístrate para acceder a tu dashboard</p>
+
+      <div id="reg-error" class="hidden mb-4 p-3 rounded-xl bg-red-50 border border-red-200 text-red-600 text-sm text-center"></div>
+      <div id="reg-success" class="hidden mb-4 p-3 rounded-xl bg-green-50 border border-green-200 text-green-600 text-sm text-center"></div>
+
+      <form id="reg-form" class="flex flex-col gap-4">
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="text-xs font-medium text-black/60 mb-1.5 block">Nombre</label>
+            <input type="text" id="reg-name" required placeholder="Juan"
+              class="w-full rounded-xl border border-black/10 px-4 py-3 text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/10 transition-all" />
+          </div>
+          <div>
+            <label class="text-xs font-medium text-black/60 mb-1.5 block">Apellido</label>
+            <input type="text" id="reg-lastname" required placeholder="Pérez"
+              class="w-full rounded-xl border border-black/10 px-4 py-3 text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/10 transition-all" />
+          </div>
+        </div>
+        <div>
+          <label class="text-xs font-medium text-black/60 mb-1.5 block">Correo electrónico</label>
+          <input type="email" id="reg-email" required placeholder="tu@correo.com"
+            class="w-full rounded-xl border border-black/10 px-4 py-3 text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/10 transition-all" />
+        </div>
+        <div>
+          <label class="text-xs font-medium text-black/60 mb-1.5 block">Teléfono</label>
+          <input type="tel" id="reg-phone" required placeholder="996 644 350"
+            class="w-full rounded-xl border border-black/10 px-4 py-3 text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/10 transition-all" />
+        </div>
+        <div>
+          <label class="text-xs font-medium text-black/60 mb-1.5 block">Contraseña</label>
+          <input type="password" id="reg-password" required minlength="6" placeholder="Mínimo 6 caracteres"
+            class="w-full rounded-xl border border-black/10 px-4 py-3 text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/10 transition-all" />
+        </div>
+        <div>
+          <label class="text-xs font-medium text-black/60 mb-1.5 block">Confirmar contraseña</label>
+          <input type="password" id="reg-password2" required minlength="6" placeholder="Repite tu contraseña"
+            class="w-full rounded-xl border border-black/10 px-4 py-3 text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/10 transition-all" />
+        </div>
+        <button type="submit" class="mt-2 w-full rounded-xl bg-gradient-to-r from-primary to-primary-light py-3.5 text-sm font-semibold text-white shadow-lg shadow-primary/20 hover:shadow-primary/30 hover:scale-[1.02] active:scale-[0.98] transition-all duration-200">
+          Crear cuenta
+        </button>
+      </form>
+
+      <div class="mt-6 text-center">
+        <p class="text-sm text-black/50">¿Ya tienes cuenta? <a href="login.html" class="text-primary font-semibold hover:text-primary-dark">Inicia sesión</a></p>
+      </div>
+    </div>
+
+    <p class="mt-6 text-center text-sm text-black/40">
+      <a href="index.html" class="hover:text-primary transition-colors">← Volver al inicio</a>
+    </p>
+  </div>
+
+  <script>
+    if (localStorage.getItem('excelentemente_user')) {
+      window.location.href = 'dashboard.html'
+    }
+
+    document.getElementById('reg-form').addEventListener('submit', function(e) {
+      e.preventDefault()
+      const name = document.getElementById('reg-name').value.trim()
+      const lastname = document.getElementById('reg-lastname').value.trim()
+      const email = document.getElementById('reg-email').value.trim()
+      const phone = document.getElementById('reg-phone').value.trim()
+      const password = document.getElementById('reg-password').value
+      const password2 = document.getElementById('reg-password2').value
+      const errorEl = document.getElementById('reg-error')
+      const successEl = document.getElementById('reg-success')
+
+      errorEl.classList.add('hidden')
+      successEl.classList.add('hidden')
+
+      if (password !== password2) {
+        errorEl.textContent = 'Las contraseñas no coinciden.'
+        errorEl.classList.remove('hidden')
+        return
+      }
+
+      const users = JSON.parse(localStorage.getItem('excelentemente_users') || '[]')
+      if (users.find(u => u.email === email)) {
+        errorEl.textContent = 'Este correo ya está registrado.'
+        errorEl.classList.remove('hidden')
+        return
+      }
+
+      const newUser = {
+        id: Date.now(),
+        name, lastname, email, phone, password,
+        createdAt: new Date().toISOString()
+      }
+      users.push(newUser)
+      localStorage.setItem('excelentemente_users', JSON.stringify(users))
+
+      successEl.textContent = '¡Cuenta creada! Redirigiendo al login...'
+      successEl.classList.remove('hidden')
+
+      setTimeout(() => { window.location.href = 'login.html' }, 1500)
+    })
+  </script>
+</body>
+</html>
