@@ -78,6 +78,8 @@
       window.location.href = 'dashboard.html'
     }
 
+    const redirect = new URLSearchParams(location.search).get('redirect')
+
     document.getElementById('reg-form').addEventListener('submit', function(e) {
       e.preventDefault()
       const name = document.getElementById('reg-name').value.trim()
@@ -116,7 +118,7 @@
       successEl.textContent = '¡Cuenta creada! Redirigiendo al login...'
       successEl.classList.remove('hidden')
 
-      setTimeout(() => { window.location.href = 'login.html' }, 1500)
+      setTimeout(() => { window.location.href = 'login.html' + (redirect ? '?redirect=' + encodeURIComponent(redirect) : '') }, 1500)
     })
   </script>
 </body>

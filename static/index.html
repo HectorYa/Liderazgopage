@@ -41,7 +41,7 @@
       <a href="contacto.html" class="text-sm text-black/70 hover:text-primary px-3 py-2 rounded-md transition-colors">Contacto</a>
     </nav>
     <div class="flex items-center gap-3">
-      <a href="login.html" class="inline-flex items-center gap-2 rounded-full border border-primary/30 bg-white px-5 py-2.5 text-sm font-semibold text-primary hover:bg-primary/5 transition-all">
+      <a href="login.html" class="hidden sm:inline-flex items-center gap-2 rounded-full border border-primary/30 bg-white px-5 py-2.5 text-sm font-semibold text-primary hover:bg-primary/5 transition-all">
         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
         Iniciar sesión
       </a>
@@ -66,6 +66,31 @@
     <a href="login.html" class="text-center text-sm text-primary font-semibold px-3 py-2 rounded-md border border-primary/20 mt-1">Iniciar sesión</a>
   </div>
 </header>
+
+<!-- Portada con nubes (Vanta.js + Three.js) -->
+<section id="cover-hero" class="relative overflow-hidden bg-gradient-to-b from-[#123a5a] via-[#0f2f4d] to-[#0b2238] min-h-[92vh] flex items-center justify-center will-change-transform" style="transform-origin: top center;">
+  <div id="vanta-clouds" class="absolute inset-0"></div>
+  <div class="absolute inset-0  pointer-events-none"></div>
+  <div id="cover-content" class="max-w-4xl mx-auto px-6 text-center relative z-10 py-16 sm:py-24 will-change-transform">
+    <p class="inline-flex items-center gap-2 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 px-4 py-1.5 text-xs font-medium text-white/90 mb-8 text-center">
+      <span class="size-2 rounded-full bg-white animate-pulse"></span>
+      Clínica Psicológica y Psiquiátrica · Huancayo
+    </p>
+    <h1 class="font-serif text-4xl sm:text-6xl md:text-7xl lg:text-8xl font-bold tracking-tight leading-none text-white drop-shadow-[0_2px_20px_rgba(0,0,0,0.4)]">Excelentemente</h1>
+    <p class="mt-6 text-white/85 text-base md:text-lg leading-relaxed max-w-xl mx-auto drop-shadow-[0_1px_8px_rgba(0,0,0,0.3)]">
+      Tu bienestar emocional comienza aquí. Te escuchamos, te acompañamos y caminamos contigo.
+    </p>
+    <div class="mt-10 flex flex-wrap justify-center gap-4">
+      <a href="agendar.html" class="inline-flex items-center gap-2 rounded-full bg-white px-8 py-4 text-sm font-semibold text-primary shadow-xl shadow-black/20 hover:scale-105 transition-all duration-300">
+        Agendar una cita
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+      </a>
+      <a href="servicios.html" class="inline-flex items-center gap-2 rounded-full bg-white/10 backdrop-blur-sm border border-white/30 px-8 py-4 text-sm font-medium text-white hover:bg-white/20 transition-all duration-300">
+        Ver servicios
+      </a>
+    </div>
+  </div>
+</section>
 
 <!-- Hero Section -->
 <section class="relative overflow-hidden bg-gradient-to-br from-primary/5 via-white to-accent/5 py-20 md:py-32">
@@ -557,5 +582,73 @@
 </footer>
 
 <script src="js/main.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r134/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/vanta@0.5.24/dist/vanta.clouds.min.js"></script>
+<script>
+  var vantaInstance = null;
+  function initVanta() {
+    if (vantaInstance || !window.VANTA || !VANTA.CLOUDS) return;
+    vantaInstance = VANTA.CLOUDS({
+      el: '#vanta-clouds',
+      mouseControls: true,
+      touchControls: true,
+      gyroControls: false,
+      minHeight: 200.00,
+      minWidth: 200.00,
+      speed: 1.30,
+      backgroundColor: 0xffffff,
+      skyColor: 0xc829d,
+      cloudColor: 0xadc1de,
+      lightColor: 0xfbf7f0,
+      sunlightColor: 0xff9933
+    });
+  }
+  function destroyVanta() {
+    if (vantaInstance) {
+      vantaInstance.destroy();
+      vantaInstance = null;
+    }
+  }
+  initVanta();
+  var coverHeroObserve = document.getElementById('cover-hero');
+  if (coverHeroObserve && 'IntersectionObserver' in window) {
+    new IntersectionObserver(function (entries) {
+      entries.forEach(function (e) {
+        if (e.isIntersecting) initVanta(); else destroyVanta();
+      });
+    }, { threshold: 0.05 }).observe(coverHeroObserve);
+  } else if (!window.VANTA || !VANTA.CLOUDS) {
+    console.warn('Vanta.js no cargó; se muestra el fondo estático.');
+  }
+</script>
+<script>
+  (function () {
+    var cover = document.getElementById('cover-hero');
+    if (!cover) return;
+    var reduced = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (reduced) return;
+    var ticking = false;
+    function shrink() {
+      var p = Math.min(window.scrollY / (window.innerHeight * 0.4), 1);
+      cover.style.transform = 'scale(' + (1 - p * 0.22) + ')';
+      cover.style.borderRadius = Math.round(p * 32) + 'px';
+      cover.style.opacity = String(1 - p * 0.15);
+      var content = document.getElementById('cover-content');
+      if (content) {
+        content.style.filter = 'blur(' + Math.round(p * 10) + 'px)';
+        content.style.opacity = String(1 - p * 0.55);
+      }
+      ticking = false;
+    }
+    function onScroll() {
+      if (!ticking) {
+        ticking = true;
+        requestAnimationFrame(shrink);
+      }
+    }
+    window.addEventListener('scroll', onScroll, { passive: true });
+    shrink();
+  })();
+</script>
 </body>
 </html>

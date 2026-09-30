@@ -20,7 +20,7 @@
     <a href="blogs.html" class="text-sm text-black/70 hover:text-primary px-3 py-2 rounded-md">Blog</a>
     <a href="contacto.html" class="text-sm text-black/70 hover:text-primary px-3 py-2 rounded-md">Contacto</a>
   </nav>
-  <a href="login.html" class="inline-flex items-center gap-2 rounded-full border border-primary/30 bg-white px-5 py-2.5 text-sm font-semibold text-primary hover:bg-primary/5 transition-all"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg> Iniciar sesión</a>
+  <a href="login.html" class="hidden sm:inline-flex items-center gap-2 rounded-full border border-primary/30 bg-white px-5 py-2.5 text-sm font-semibold text-primary hover:bg-primary/5 transition-all"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg> Iniciar sesión</a>
       <a href="agendar.html" class="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-primary to-primary-light px-5 py-2.5 text-sm font-semibold text-white shadow-lg shadow-primary/25 hover:scale-105 transition-all">
     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
     Agendar
@@ -36,131 +36,13 @@
     </div>
 
     <h2 class="font-serif text-2xl font-bold mb-8 text-primary">Psiquiatría</h2>
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-16">
-      <div class="rounded-2xl border border-black/5 bg-white p-5 text-center card-hover">
-        <div class="size-20 rounded-full bg-primary/10 mx-auto mb-3 flex items-center justify-center text-primary font-bold text-xl">WB</div>
-        <h3 class="font-semibold text-sm">Wilbert Barzola Huamán</h3>
-        <p class="text-xs text-black/50 mt-1">Médico Psiquiatra especialista en terapia familiar y de parejas.</p>
-      </div>
-      <div class="rounded-2xl border border-black/5 bg-white p-5 text-center card-hover">
-        <div class="size-20 rounded-full bg-primary/10 mx-auto mb-3 flex items-center justify-center text-primary font-bold text-xl">HS</div>
-        <h3 class="font-semibold text-sm">Hernan Sinche Espinal</h3>
-        <p class="text-xs text-black/50 mt-1">Médico Psiquiatra, especialista en salud mental, psiquiatría clínica, infantil y del adolescente.</p>
-      </div>
-      <div class="rounded-2xl border border-black/5 bg-white p-5 text-center card-hover">
-        <div class="size-20 rounded-full bg-primary/10 mx-auto mb-3 flex items-center justify-center text-primary font-bold text-xl">PQ</div>
-        <h3 class="font-semibold text-sm">Patricia Quispe Baltazar</h3>
-        <p class="text-xs text-black/50 mt-1">Médico Psiquiatra especialista en trauma psicológico, duelo y resiliencia.</p>
-      </div>
-      <div class="rounded-2xl border border-black/5 bg-white p-5 text-center card-hover">
-        <div class="size-20 rounded-full bg-primary/10 mx-auto mb-3 flex items-center justify-center text-primary font-bold text-xl">UJ</div>
-        <h3 class="font-semibold text-sm">Ursula Victoria Jara Huancaya</h3>
-        <p class="text-xs text-black/50 mt-1">Médico psiquiatra especialista en psiquiatría clínica y bienestar ocupacional.</p>
-      </div>
-      <div class="rounded-2xl border border-black/5 bg-white p-5 text-center card-hover">
-        <div class="size-20 rounded-full bg-primary/10 mx-auto mb-3 flex items-center justify-center text-primary font-bold text-xl">WV</div>
-        <h3 class="font-semibold text-sm">Wendy Grethel Villaverde</h3>
-        <p class="text-xs text-black/50 mt-1">Médico Psiquiatra especialista en salud mental y psiquiatría clínica.</p>
-      </div>
-      <div class="rounded-2xl border border-black/5 bg-white p-5 text-center card-hover">
-        <div class="size-20 rounded-full bg-primary/10 mx-auto mb-3 flex items-center justify-center text-primary font-bold text-xl">EM</div>
-        <h3 class="font-semibold text-sm">Erika Morales Zenteno</h3>
-        <p class="text-xs text-black/50 mt-1">Médico Psiquiatra especialista en psicoterapia psicoanálisis multifamiliar.</p>
-      </div>
-      <div class="rounded-2xl border border-black/5 bg-white p-5 text-center card-hover">
-        <div class="size-20 rounded-full bg-primary/10 mx-auto mb-3 flex items-center justify-center text-primary font-bold text-xl">GC</div>
-        <h3 class="font-semibold text-sm">Grecia Choque Zamata</h3>
-        <p class="text-xs text-black/50 mt-1">Médico Psiquiatra especialista en Terapia de Esquemas y Mindfulness.</p>
-      </div>
-    </div>
+    <div id="grid-psiquiatria" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-16"></div>
 
     <h2 class="font-serif text-2xl font-bold mb-8 text-primary">Psicología</h2>
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-16">
-      <div class="rounded-2xl border border-black/5 bg-white p-5 text-center card-hover">
-        <div class="size-20 rounded-full bg-accent/10 mx-auto mb-3 flex items-center justify-center text-accent font-bold text-xl">DC</div>
-        <h3 class="font-semibold text-sm">Dennys Caceres Nuñez</h3>
-        <p class="text-xs text-black/50 mt-1">Psicólogo especializado en conducta y TREC en población infanto-juvenil.</p>
-      </div>
-      <div class="rounded-2xl border border-black/5 bg-white p-5 text-center card-hover">
-        <div class="size-20 rounded-full bg-accent/10 mx-auto mb-3 flex items-center justify-center text-accent font-bold text-xl">EC</div>
-        <h3 class="font-semibold text-sm">Elizabeth Chirinos Espinoza</h3>
-        <p class="text-xs text-black/50 mt-1">Psicóloga especialista en evaluación clínica y terapia infantil.</p>
-      </div>
-      <div class="rounded-2xl border border-black/5 bg-white p-5 text-center card-hover">
-        <div class="size-20 rounded-full bg-accent/10 mx-auto mb-3 flex items-center justify-center text-accent font-bold text-xl">EG</div>
-        <h3 class="font-semibold text-sm">Erick Garay Alvarado</h3>
-        <p class="text-xs text-black/50 mt-1">Psicólogo especialista en problemas de ansiedad y depresión.</p>
-      </div>
-      <div class="rounded-2xl border border-black/5 bg-white p-5 text-center card-hover">
-        <div class="size-20 rounded-full bg-accent/10 mx-auto mb-3 flex items-center justify-center text-accent font-bold text-xl">DP</div>
-        <h3 class="font-semibold text-sm">Diana Perez Saboya</h3>
-        <p class="text-xs text-black/50 mt-1">Psicóloga especialista en evaluación psicológica forense.</p>
-      </div>
-      <div class="rounded-2xl border border-black/5 bg-white p-5 text-center card-hover">
-        <div class="size-20 rounded-full bg-accent/10 mx-auto mb-3 flex items-center justify-center text-accent font-bold text-xl">FL</div>
-        <h3 class="font-semibold text-sm">Fanny León Nuñez</h3>
-        <p class="text-xs text-black/50 mt-1">Psicóloga especialista en terapia cognitivo conductual (TCC).</p>
-      </div>
-      <div class="rounded-2xl border border-black/5 bg-white p-5 text-center card-hover">
-        <div class="size-20 rounded-full bg-accent/10 mx-auto mb-3 flex items-center justify-center text-accent font-bold text-xl">LS</div>
-        <h3 class="font-semibold text-sm">Leslie Soto Hurtado</h3>
-        <p class="text-xs text-black/50 mt-1">Psicóloga especialista en Terapia Dialéctico Conductual (DBT) y Psicología Clínica.</p>
-      </div>
-      <div class="rounded-2xl border border-black/5 bg-white p-5 text-center card-hover">
-        <div class="size-20 rounded-full bg-accent/10 mx-auto mb-3 flex items-center justify-center text-accent font-bold text-xl">MC</div>
-        <h3 class="font-semibold text-sm">Maria Carrasco Araujo</h3>
-        <p class="text-xs text-black/50 mt-1">Psicóloga especialista en Psicología Clínica y Psicoterapia Clínica.</p>
-      </div>
-      <div class="rounded-2xl border border-black/5 bg-white p-5 text-center card-hover">
-        <div class="size-20 rounded-full bg-accent/10 mx-auto mb-3 flex items-center justify-center text-accent font-bold text-xl">MY</div>
-        <h3 class="font-semibold text-sm">Morgana Yupanqui García</h3>
-        <p class="text-xs text-black/50 mt-1">Psicóloga especialista en terapia cognitivo conductual.</p>
-      </div>
-      <div class="rounded-2xl border border-black/5 bg-white p-5 text-center card-hover">
-        <div class="size-20 rounded-full bg-accent/10 mx-auto mb-3 flex items-center justify-center text-accent font-bold text-xl">NS</div>
-        <h3 class="font-semibold text-sm">Nohely Segura Ortega</h3>
-        <p class="text-xs text-black/50 mt-1">Psicóloga especialista en psicoterapia cognitivo conductual.</p>
-      </div>
-      <div class="rounded-2xl border border-black/5 bg-white p-5 text-center card-hover">
-        <div class="size-20 rounded-full bg-accent/10 mx-auto mb-3 flex items-center justify-center text-accent font-bold text-xl">ST</div>
-        <h3 class="font-semibold text-sm">Sandra Tapara Aquino</h3>
-        <p class="text-xs text-black/50 mt-1">Psicóloga especialista en terapias de parejas desde un enfoque Multimodal.</p>
-      </div>
-      <div class="rounded-2xl border border-black/5 bg-white p-5 text-center card-hover">
-        <div class="size-20 rounded-full bg-accent/10 mx-auto mb-3 flex items-center justify-center text-accent font-bold text-xl">YP</div>
-        <h3 class="font-semibold text-sm">Yurith Guidotti Palacios</h3>
-        <p class="text-xs text-black/50 mt-1">Psicóloga especialista en Psicología Clínica y Terapia Emocional.</p>
-      </div>
-      <div class="rounded-2xl border border-black/5 bg-white p-5 text-center card-hover">
-        <div class="size-20 rounded-full bg-accent/10 mx-auto mb-3 flex items-center justify-center text-accent font-bold text-xl">ZM</div>
-        <h3 class="font-semibold text-sm">Zenaida Miguel Contreras</h3>
-        <p class="text-xs text-black/50 mt-1">Psicología Clínica, Terapia Dialéctico Conductual (DBT) y Terapia de Aceptación y Compromiso (ACT).</p>
-      </div>
-      <div class="rounded-2xl border border-black/5 bg-white p-5 text-center card-hover">
-        <div class="size-20 rounded-full bg-accent/10 mx-auto mb-3 flex items-center justify-center text-accent font-bold text-xl">MN</div>
-        <h3 class="font-semibold text-sm">Marilia Núñez Sotelo</h3>
-        <p class="text-xs text-black/50 mt-1">Psicología Educativa, Psicología Clínica y Terapia Cognitivo-Conductual.</p>
-      </div>
-      <div class="rounded-2xl border border-black/5 bg-white p-5 text-center card-hover">
-        <div class="size-20 rounded-full bg-accent/10 mx-auto mb-3 flex items-center justify-center text-accent font-bold text-xl">VS</div>
-        <h3 class="font-semibold text-sm">Victor Solano Gallardo</h3>
-        <p class="text-xs text-black/50 mt-1">Psicólogo especialista en Terapia de Aceptación y Compromiso (ACT).</p>
-      </div>
-    </div>
+    <div id="grid-psicologia" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-16"></div>
 
     <h2 class="font-serif text-2xl font-bold mb-8 text-primary">Nutrición y Fisioterapia</h2>
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-      <div class="rounded-2xl border border-black/5 bg-white p-5 text-center card-hover">
-        <div class="size-20 rounded-full bg-green-100 mx-auto mb-3 flex items-center justify-center text-green-600 font-bold text-xl">KA</div>
-        <h3 class="font-semibold text-sm">Kelly Alvarez Ramón</h3>
-        <p class="text-xs text-black/50 mt-1">Nutrióloga</p>
-      </div>
-      <div class="rounded-2xl border border-black/5 bg-white p-5 text-center card-hover">
-        <div class="size-20 rounded-full bg-pink-100 mx-auto mb-3 flex items-center justify-center text-pink-600 font-bold text-xl">CC</div>
-        <h3 class="font-semibold text-sm">Carol Casas Mayta</h3>
-        <p class="text-xs text-black/50 mt-1">Fisioterapeuta con experiencia en rehabilitación integral y cuidado postural.</p>
-      </div>
-    </div>
+    <div id="grid-nutricion" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6"></div>
   </div>
 </section>
 
@@ -173,4 +55,7 @@
   </div>
   <div class="pt-8 flex items-center justify-between text-xs text-white/30"><p>&copy; 2026 Excelentemente</p><a href="agendar.html" class="rounded-full bg-primary px-5 py-2 font-semibold text-white hover:bg-primary-light transition-colors">Agendar cita</a></div>
 </div></footer>
-<script src="js/main.js"></script></body></html>
+<script src="js/main.js"></script>
+<script src="js/profesionales-data.js"></script>
+<script src="js/profesionales.js"></script>
+</body></html>

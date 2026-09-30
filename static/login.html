@@ -62,9 +62,11 @@
   </div>
 
   <script>
+    const redirect = new URLSearchParams(location.search).get('redirect')
+
     // Redirigir si ya está logueado
     if (localStorage.getItem('excelentemente_user')) {
-      window.location.href = 'dashboard.html'
+      window.location.href = redirect || 'dashboard.html'
     }
 
     document.getElementById('login-form').addEventListener('submit', function(e) {
@@ -79,7 +81,7 @@
 
       if (user) {
         localStorage.setItem('excelentemente_user', JSON.stringify(user))
-        window.location.href = 'dashboard.html'
+        window.location.href = redirect || 'dashboard.html'
       } else {
         errorEl.textContent = 'Correo o contraseña incorrectos. Intenta de nuevo.'
         errorEl.classList.remove('hidden')
