@@ -3,6 +3,21 @@
 <head>
   <meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Perfil Profesional — Excelentemente</title>
+  <link rel="icon" type="image/svg+xml" href="favicon.svg" />
+  <meta name="theme-color" content="#1a7a6d" />
+  <link rel="canonical" href="https://excelentemente.org/perfil-profesional.html" />
+  <meta name="robots" content="noindex, nofollow" />
+  <meta name="description" content="Perfil del especialista en Excelentemente: especialidad, formación, horarios y comentarios de pacientes." />
+  <meta property="og:type" content="website" />
+  <meta property="og:site_name" content="Excelentemente" />
+  <meta property="og:title" content="Perfil Profesional — Excelentemente" />
+  <meta property="og:description" content="Perfil del especialista en Excelentemente: especialidad, formación, horarios y comentarios de pacientes." />
+  <meta property="og:url" content="https://excelentemente.org/perfil-profesional.html" />
+  <meta property="og:image" content="https://excelentemente.org/img/imgPsicologia/image.png" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Perfil Profesional — Excelentemente" />
+  <meta name="twitter:description" content="Perfil del especialista en Excelentemente: especialidad, formación, horarios y comentarios de pacientes." />
+  <meta name="twitter:image" content="https://excelentemente.org/img/imgPsicologia/image.png" />
   <link rel="preconnect" href="https://fonts.googleapis.com" /><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,100..900&family=Geist:wght@100..900&display=swap" rel="stylesheet" />
   <script src="https://cdn.tailwindcss.com"></script>
@@ -49,7 +64,7 @@
         <!-- Ficha principal -->
         <div class="rounded-3xl border border-black/5 bg-white p-6 lg:p-8 card-hover">
           <div class="flex items-start gap-5">
-            <div id="prof-avatar" class="size-20 rounded-2xl flex items-center justify-center text-white font-bold text-2xl shrink-0"></div>
+            <div id="prof-avatar" class="size-20 rounded-2xl flex items-center justify-center text-white font-bold text-2xl shrink-0 overflow-hidden"></div>
             <div class="min-w-0">
               <h1 id="prof-name" class="font-serif text-3xl font-bold tracking-tight"></h1>
               <p id="prof-role" class="mt-1 text-sm font-semibold text-primary"></p>
@@ -89,6 +104,12 @@
             <h2 class="text-xs uppercase tracking-[0.18em] text-primary font-semibold mb-3">Áreas de especialidad</h2>
             <div id="prof-tags" class="flex flex-wrap gap-2"></div>
           </div>
+
+          <!-- Servicios -->
+          <div id="prof-services-wrap" class="mt-6 hidden">
+            <h2 class="text-xs uppercase tracking-[0.18em] text-primary font-semibold mb-3">Servicios</h2>
+            <div id="prof-services" class="flex flex-wrap gap-2"></div>
+          </div>
         </div>
 
         <!-- Comentarios -->
@@ -104,7 +125,7 @@
           <form id="comment-form" class="rounded-2xl border border-black/5 bg-neutral-50 p-4 flex flex-col gap-3">
             <p class="text-sm font-semibold text-black/70">Deja tu apreciación</p>
             <div class="grid grid-cols-1 sm:grid-cols-[1fr_auto] gap-3">
-              <input type="text" id="comment-name" required placeholder="Tu nombre" class="w-full rounded-xl border border-black/10 bg-white px-4 py-2.5 text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/10 transition-all" />
+              <input type="text" id="comment-name" placeholder="Tu nombre" class="w-full rounded-xl border border-black/10 bg-white px-4 py-2.5 text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/10 transition-all" />
               <div id="comment-stars" class="flex items-center gap-1 px-1">
                 <button type="button" data-star="1" class="comment-star text-2xl leading-none text-neutral-300 hover:text-amber-400 transition-colors">★</button>
                 <button type="button" data-star="2" class="comment-star text-2xl leading-none text-neutral-300 hover:text-amber-400 transition-colors">★</button>
@@ -175,7 +196,9 @@
   <div class="pt-8 flex items-center justify-between text-xs text-white/30"><p>&copy; 2026 Excelentemente</p></div>
 </div></footer>
 <script src="js/main.js"></script>
-<script src="js/profesionales-data.js"></script>
+<script src="js/supabase-config.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script src="js/supabase-client.js"></script>
 <script src="js/perfil-profesional.js"></script>
 </body>
 </html>

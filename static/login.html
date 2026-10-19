@@ -3,6 +3,21 @@
 <head>
   <meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Iniciar Sesión — Excelentemente</title>
+  <link rel="icon" type="image/svg+xml" href="favicon.svg" />
+  <meta name="theme-color" content="#1a7a6d" />
+  <link rel="canonical" href="https://excelentemente.org/login.html" />
+  <meta name="robots" content="noindex, nofollow" />
+  <meta name="description" content="Inicia sesión en tu cuenta de Excelentemente para gestionar tus citas y servicios." />
+  <meta property="og:type" content="website" />
+  <meta property="og:site_name" content="Excelentemente" />
+  <meta property="og:title" content="Iniciar Sesión — Excelentemente" />
+  <meta property="og:description" content="Inicia sesión en tu cuenta de Excelentemente para gestionar tus citas y servicios." />
+  <meta property="og:url" content="https://excelentemente.org/login.html" />
+  <meta property="og:image" content="https://excelentemente.org/img/imgPsicologia/image.png" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Iniciar Sesión — Excelentemente" />
+  <meta name="twitter:description" content="Inicia sesión en tu cuenta de Excelentemente para gestionar tus citas y servicios." />
+  <meta name="twitter:image" content="https://excelentemente.org/img/imgPsicologia/image.png" />
   <link rel="preconnect" href="https://fonts.googleapis.com" /><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,100..900&family=Geist:wght@100..900&display=swap" rel="stylesheet" />
   <script src="https://cdn.tailwindcss.com"></script>
@@ -61,32 +76,68 @@
     </p>
   </div>
 
+  <script src="js/supabase-config.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+  <script src="js/supabase-client.js"></script>
+  <script src="js/auth-ui.js"></script>
+  <script src="js/session.js"></script>
   <script>
-    const redirect = new URLSearchParams(location.search).get('redirect')
-
-    // Redirigir si ya está logueado
-    if (localStorage.getItem('excelentemente_user')) {
-      window.location.href = redirect || 'dashboard.html'
-    }
-
-    document.getElementById('login-form').addEventListener('submit', function(e) {
-      e.preventDefault()
-      const email = document.getElementById('login-email').value.trim()
-      const password = document.getElementById('login-password').value
+    (async function () {
+      const params = new URLSearchParams(location.search)
+      const target = safeRedirect(params.get('redirect'), null)
+      const form = document.getElementById('login-form')
       const errorEl = document.getElementById('login-error')
+      const submitBtn = form.querySelector('button[type="submit"]')
 
-      // Obtener usuarios registrados
-      const users = JSON.parse(localStorage.getItem('excelentemente_users') || '[]')
-      const user = users.find(u => u.email === email && u.password === password)
-
-      if (user) {
-        localStorage.setItem('excelentemente_user', JSON.stringify(user))
-        window.location.href = redirect || 'dashboard.html'
-      } else {
-        errorEl.textContent = 'Correo o contraseña incorrectos. Intenta de nuevo.'
+      function showError(text) {
+        errorEl.textContent = text
         errorEl.classList.remove('hidden')
       }
-    })
+
+      if (window.sb) {
+        const { data } = await sb.auth.getSession()
+        if (data && data.session) {
+          const role = await fetchRole(data.session.user.id)
+          window.location.replace(target || roleHome(role))
+          return
+        }
+      }
+
+      form.addEventListener('submit', async function (e) {
+        e.preventDefault()
+        errorEl.classList.add('hidden')
+
+        if (!window.sb) {
+          showError('No se pudo conectar con el servidor. Revisa tu conexión e intenta de nuevo.')
+          return
+        }
+
+        const email = document.getElementById('login-email').value.trim()
+        const password = document.getElementById('login-password').value
+
+        submitBtn.disabled = true
+        submitBtn.textContent = 'Ingresando...'
+
+        const { data, error } = await sb.auth.signInWithPassword({ email, password })
+
+        if (error) {
+          showError(authErrorMessage(error))
+          submitBtn.disabled = false
+          submitBtn.textContent = 'Iniciar sesión'
+          return
+        }
+
+        if (!data.session) {
+          showError('Debes confirmar tu correo antes de iniciar sesión. Revisa tu bandeja de entrada.')
+          submitBtn.disabled = false
+          submitBtn.textContent = 'Iniciar sesión'
+          return
+        }
+
+        const role = await fetchRole(data.user.id)
+        window.location.replace(target || roleHome(role))
+      })
+    })()
   </script>
 </body>
 </html>

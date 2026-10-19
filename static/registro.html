@@ -3,6 +3,21 @@
 <head>
   <meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Registro — Excelentemente</title>
+  <link rel="icon" type="image/svg+xml" href="favicon.svg" />
+  <meta name="theme-color" content="#1a7a6d" />
+  <link rel="canonical" href="https://excelentemente.org/registro.html" />
+  <meta name="robots" content="noindex, nofollow" />
+  <meta name="description" content="Crea tu cuenta en Excelentemente y agenda tu primera cita con un especialista." />
+  <meta property="og:type" content="website" />
+  <meta property="og:site_name" content="Excelentemente" />
+  <meta property="og:title" content="Registro — Excelentemente" />
+  <meta property="og:description" content="Crea tu cuenta en Excelentemente y agenda tu primera cita con un especialista." />
+  <meta property="og:url" content="https://excelentemente.org/registro.html" />
+  <meta property="og:image" content="https://excelentemente.org/img/imgPsicologia/image.png" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Registro — Excelentemente" />
+  <meta name="twitter:description" content="Crea tu cuenta en Excelentemente y agenda tu primera cita con un especialista." />
+  <meta name="twitter:image" content="https://excelentemente.org/img/imgPsicologia/image.png" />
   <link rel="preconnect" href="https://fonts.googleapis.com" /><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,100..900&family=Geist:wght@100..900&display=swap" rel="stylesheet" />
   <script src="https://cdn.tailwindcss.com"></script>
@@ -73,53 +88,94 @@
     </p>
   </div>
 
+  <script src="js/supabase-config.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+  <script src="js/supabase-client.js"></script>
+  <script src="js/auth-ui.js"></script>
+  <script src="js/session.js"></script>
   <script>
-    if (localStorage.getItem('excelentemente_user')) {
-      window.location.href = 'dashboard.html'
-    }
-
-    const redirect = new URLSearchParams(location.search).get('redirect')
-
-    document.getElementById('reg-form').addEventListener('submit', function(e) {
-      e.preventDefault()
-      const name = document.getElementById('reg-name').value.trim()
-      const lastname = document.getElementById('reg-lastname').value.trim()
-      const email = document.getElementById('reg-email').value.trim()
-      const phone = document.getElementById('reg-phone').value.trim()
-      const password = document.getElementById('reg-password').value
-      const password2 = document.getElementById('reg-password2').value
+    (async function () {
+      const params = new URLSearchParams(location.search)
+      const target = safeRedirect(params.get('redirect'), null)
+      const form = document.getElementById('reg-form')
       const errorEl = document.getElementById('reg-error')
       const successEl = document.getElementById('reg-success')
+      const submitBtn = form.querySelector('button[type="submit"]')
 
-      errorEl.classList.add('hidden')
-      successEl.classList.add('hidden')
-
-      if (password !== password2) {
-        errorEl.textContent = 'Las contraseñas no coinciden.'
+      function showError(text) {
+        successEl.classList.add('hidden')
+        errorEl.textContent = text
         errorEl.classList.remove('hidden')
-        return
+        submitBtn.disabled = false
+        submitBtn.textContent = 'Crear cuenta'
       }
 
-      const users = JSON.parse(localStorage.getItem('excelentemente_users') || '[]')
-      if (users.find(u => u.email === email)) {
-        errorEl.textContent = 'Este correo ya está registrado.'
-        errorEl.classList.remove('hidden')
-        return
+      if (window.sb) {
+        const { data } = await sb.auth.getSession()
+        if (data && data.session) {
+          const role = await fetchRole(data.session.user.id)
+          window.location.replace(target || roleHome(role))
+          return
+        }
       }
 
-      const newUser = {
-        id: Date.now(),
-        name, lastname, email, phone, password,
-        createdAt: new Date().toISOString()
-      }
-      users.push(newUser)
-      localStorage.setItem('excelentemente_users', JSON.stringify(users))
+      form.addEventListener('submit', async function (e) {
+        e.preventDefault()
+        errorEl.classList.add('hidden')
+        successEl.classList.add('hidden')
 
-      successEl.textContent = '¡Cuenta creada! Redirigiendo al login...'
-      successEl.classList.remove('hidden')
+        const name = document.getElementById('reg-name').value.trim()
+        const lastname = document.getElementById('reg-lastname').value.trim()
+        const email = document.getElementById('reg-email').value.trim()
+        const phone = document.getElementById('reg-phone').value.trim()
+        const password = document.getElementById('reg-password').value
+        const password2 = document.getElementById('reg-password2').value
 
-      setTimeout(() => { window.location.href = 'login.html' + (redirect ? '?redirect=' + encodeURIComponent(redirect) : '') }, 1500)
-    })
+        if (password !== password2) {
+          showError('Las contraseñas no coinciden.')
+          return
+        }
+
+        if (!window.sb) {
+          showError('No se pudo conectar con el servidor. Revisa tu conexión e intenta de nuevo.')
+          return
+        }
+
+        submitBtn.disabled = true
+        submitBtn.textContent = 'Creando cuenta...'
+
+        const redirectToLogin = new URL('login.html', location.href).href
+        const { data, error } = await sb.auth.signUp({
+          email,
+          password,
+          options: {
+            data: { name, lastname, phone },
+            emailRedirectTo: redirectToLogin
+          }
+        })
+
+        if (error) {
+          showError(authErrorMessage(error))
+          return
+        }
+
+        if (data.user && Array.isArray(data.user.identities) && data.user.identities.length === 0) {
+          showError('Ese correo ya está registrado. Inicia sesión.')
+          return
+        }
+
+        if (data.session) {
+          window.location.replace(target || roleHome('paciente'))
+          return
+        }
+
+        successEl.textContent = '¡Cuenta creada! Te enviamos un correo para confirmarla. Revisa tu bandeja de entrada (y spam).'
+        successEl.classList.remove('hidden')
+        submitBtn.disabled = false
+        submitBtn.textContent = 'Crear cuenta'
+        form.reset()
+      })
+    })()
   </script>
 </body>
 </html>

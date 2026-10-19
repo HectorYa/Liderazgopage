@@ -1,0 +1,12 @@
+User-agent: *
+Allow: /
+
+# Panel y páginas privadas
+Disallow: /admin.html
+Disallow: /dashboard.html
+Disallow: /panel-profesional.html
+Disallow: /perfil-profesional.html
+Disallow: /login.html
+Disallow: /registro.html
+
+Sitemap: https://excelentemente.org/sitemap.xml

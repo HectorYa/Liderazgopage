@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="es" class="bg-white">
+<head>
+  <meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Administración — Excelentemente</title>
+  <link rel="icon" type="image/svg+xml" href="favicon.svg" />
+  <meta name="theme-color" content="#1a7a6d" />
+  <link rel="canonical" href="https://excelentemente.org/admin.html" />
+  <meta name="robots" content="noindex, nofollow" />
+  <meta name="description" content="Panel de administración de Excelentemente." />
+  <meta property="og:type" content="website" />
+  <meta property="og:site_name" content="Excelentemente" />
+  <meta property="og:title" content="Administración — Excelentemente" />
+  <meta property="og:description" content="Panel de administración de Excelentemente." />
+  <meta property="og:url" content="https://excelentemente.org/admin.html" />
+  <meta property="og:image" content="https://excelentemente.org/img/imgPsicologia/image.png" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Administración — Excelentemente" />
+  <meta name="twitter:description" content="Panel de administración de Excelentemente." />
+  <meta name="twitter:image" content="https://excelentemente.org/img/imgPsicologia/image.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" /><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,100..900&family=Geist:wght@100..900&display=swap" rel="stylesheet" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>tailwind.config={theme:{extend:{fontFamily:{sans:['Geist','sans-serif'],serif:['Fraunces','serif']},colors:{primary:{DEFAULT:'#1a7a6d',light:'#2aa394',dark:'#145e54'},accent:{DEFAULT:'#e8a838'}}}}}</script>
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+<body class="font-sans antialiased bg-neutral-50 min-h-screen">
+  <header class="bg-white border-b border-black/5">
+    <div class="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between gap-4">
+      <div class="flex items-center gap-3 min-w-0">
+        <a href="index.html" class="font-serif text-xl font-bold text-primary shrink-0">Excelentemente</a>
+        <span class="rounded-full bg-primary/10 px-3 py-1 text-[10px] font-semibold uppercase tracking-wider text-primary">Administración</span>
+      </div>
+      <div class="flex items-center gap-3">
+        <span id="admin-name" class="hidden sm:block text-sm text-black/60 truncate max-w-[220px]"></span>
+        <div id="admin-avatar" class="size-9 rounded-full bg-primary text-white flex items-center justify-center text-xs font-bold shrink-0"></div>
+        <button type="button" onclick="logout()" class="rounded-full border border-black/10 px-4 py-2 text-xs font-semibold text-black/60 hover:border-red-200 hover:text-red-500 transition-colors">Cerrar sesión</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="max-w-6xl mx-auto px-6 py-10">
+    <div id="admin-loading" class="text-sm text-black/40">Cargando panel...</div>
+
+    <div id="admin-content" class="hidden">
+      <div class="mb-8">
+        <p class="text-xs uppercase tracking-[0.18em] text-primary font-medium">Panel</p>
+        <h1 class="mt-2 font-serif text-3xl md:text-4xl font-bold tracking-tight">Administración</h1>
+        <p class="mt-2 text-sm text-black/50">Gestiona el catálogo, las citas y los usuarios del centro.</p>
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+        <div class="rounded-2xl bg-white border border-black/5 p-5">
+          <p class="text-xs text-black/40">Profesionales activos</p>
+          <p id="stat-professionals" class="mt-2 text-3xl font-semibold text-primary">—</p>
+        </div>
+        <div class="rounded-2xl bg-white border border-black/5 p-5">
+          <p class="text-xs text-black/40">Servicios publicados</p>
+          <p id="stat-services" class="mt-2 text-3xl font-semibold text-primary">—</p>
+        </div>
+        <div class="rounded-2xl bg-white border border-black/5 p-5">
+          <p class="text-xs text-black/40">Citas próximas</p>
+          <p id="stat-appointments" class="mt-2 text-3xl font-semibold text-primary">—</p>
+        </div>
+        <div class="rounded-2xl bg-white border border-black/5 p-5">
+          <p class="text-xs text-black/40">Pacientes registrados</p>
+          <p id="stat-patients" class="mt-2 text-3xl font-semibold text-primary">—</p>
+        </div>
+      </div>
+
+      <nav class="flex gap-1 overflow-x-auto border-b border-black/5 mb-6" aria-label="Secciones de administración">
+        <button type="button" data-tab="resumen" class="admin-tab shrink-0 px-4 py-3 text-sm font-semibold border-b-2 border-transparent text-black/40 hover:text-primary transition-colors">Resumen</button>
+        <button type="button" data-tab="profesionales" class="admin-tab shrink-0 px-4 py-3 text-sm font-semibold border-b-2 border-transparent text-black/40 hover:text-primary transition-colors">Profesionales</button>
+        <button type="button" data-tab="servicios" class="admin-tab shrink-0 px-4 py-3 text-sm font-semibold border-b-2 border-transparent text-black/40 hover:text-primary transition-colors">Servicios</button>
+        <button type="button" data-tab="citas" class="admin-tab shrink-0 px-4 py-3 text-sm font-semibold border-b-2 border-transparent text-black/40 hover:text-primary transition-colors">Citas</button>
+        <button type="button" data-tab="usuarios" class="admin-tab shrink-0 px-4 py-3 text-sm font-semibold border-b-2 border-transparent text-black/40 hover:text-primary transition-colors">Usuarios</button>
+        <button type="button" data-tab="mensajes" class="admin-tab shrink-0 px-4 py-3 text-sm font-semibold border-b-2 border-transparent text-black/40 hover:text-primary transition-colors">Mensajes</button>
+        <button type="button" data-tab="comentarios" class="admin-tab shrink-0 px-4 py-3 text-sm font-semibold border-b-2 border-transparent text-black/40 hover:text-primary transition-colors">Comentarios</button>
+      </nav>
+
+      <section class="admin-section" data-section="resumen">
+        <div class="rounded-2xl bg-white border border-black/5 p-6">
+          <h2 class="font-semibold">Bienvenido</h2>
+          <p class="mt-1 text-sm text-black/50">Usa las pestañas para gestionar fichas, servicios, citas, usuarios, mensajes de contacto y comentarios.</p>
+          <div class="mt-5 flex flex-wrap gap-3 text-xs font-semibold">
+            <a href="profesionales.html" class="rounded-full border border-primary/30 px-4 py-2 text-primary hover:bg-primary/5 transition-colors">Ver catálogo público</a>
+            <a href="index.html" class="rounded-full border border-black/10 px-4 py-2 text-black/60 hover:border-primary/30 hover:text-primary transition-colors">Volver al inicio</a>
+          </div>
+        </div>
+      </section>
+
+      <section class="admin-section hidden" data-section="profesionales">
+        <div class="grid grid-cols-1 lg:grid-cols-5 gap-6">
+          <div class="lg:col-span-2 rounded-2xl bg-white border border-black/5 p-6">
+            <h2 id="prof-form-title" class="font-serif text-2xl font-bold">Nuevo profesional</h2>
+            <form id="prof-form" class="mt-5 flex flex-col gap-3">
+              <input type="hidden" id="prof-original-id" />
+              <label class="text-xs font-semibold text-black/50">Identificador (slug)
+                <input type="text" id="prof-id" required placeholder="ej: ana-perez" class="mt-1 w-full rounded-xl border border-black/10 bg-white px-3 py-2.5 text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/10" />
+              </label>
+              <label class="text-xs font-semibold text-black/50">Nombre
+                <input type="text" id="prof-name" required class="mt-1 w-full rounded-xl border border-black/10 bg-white px-3 py-2.5 text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/10" />
+              </label>
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <label class="text-xs font-semibold text-black/50">Cargo
+                  <input type="text" id="prof-role" required class="mt-1 w-full rounded-xl border border-black/10 bg-white px-3 py-2.5 text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/10" />
+                </label>
+                <label class="text-xs font-semibold text-black/50">Categoría
+                  <select id="prof-category" class="mt-1 w-full rounded-xl border border-black/10 bg-white px-3 py-2.5 text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/10">
+                    <option value="psiquiatria">Psiquiatría</option>
+                    <option value="psicologia">Psicología</option>
+                    <option value="nutricion">Nutrición</option>
+                    <option value="fisioterapia">Fisioterapia</option>
+                  </select>
+                </label>
+              </div>
+              <label class="text-xs font-semibold text-black/50">Grado / formación
+                <input type="text" id="prof-degree" required class="mt-1 w-full rounded-xl border border-black/10 bg-white px-3 py-2.5 text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/10" />
+              </label>
+              <label class="text-xs font-semibold text-black/50">Especialidad
+                <input type="text" id="prof-specialty" required class="mt-1 w-full rounded-xl border border-black/10 bg-white px-3 py-2.5 text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/10" />
+              </label>
+              <label class="text-xs font-semibold text-black/50">Sobre el profesional
+                <textarea id="prof-bio" rows="4" required class="mt-1 w-full rounded-xl border border-black/10 bg-white px-3 py-2.5 text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/10 resize-y"></textarea>
+              </label>
+              <label class="text-xs font-semibold text-black/50">URL de foto
+                <input type="url" id="prof-photo" placeholder="https://..." class="mt-1 w-full rounded-xl border border-black/10 bg-white px-3 py-2.5 text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/10" />
+              </label>
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <label class="text-xs font-semibold text-black/50">Cuenta vinculada
+                  <select id="prof-user" class="mt-1 w-full rounded-xl border border-black/10 bg-white px-3 py-2.5 text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/10">
+                    <option value="">Sin vincular</option>
+                  </select>
+                </label>
+                <label class="text-xs font-semibold text-black/50">Orden
+                  <input type="number" id="prof-order" value="0" min="0" class="mt-1 w-full rounded-xl border border-black/10 bg-white px-3 py-2.5 text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/10" />
+                </label>
+              </div>
+              <label class="inline-flex items-center gap-2 text-sm text-black/60">
+                <input type="checkbox" id="prof-active" checked class="accent-[#1a7a6d]" /> Visible en el catálogo
+              </label>
+              <div id="prof-msg" class="hidden text-xs text-center p-2.5 rounded-xl"></div>
+              <div class="flex gap-2">
+                <button type="submit" class="flex-1 rounded-xl bg-primary px-4 py-2.5 text-sm font-semibold text-white hover:bg-primary-dark transition-colors">Guardar</button>
+                <button type="button" id="prof-cancel" class="hidden rounded-xl border border-black/10 px-4 py-2.5 text-sm font-semibold text-black/50 hover:border-black/20 transition-colors">Cancelar</button>
+              </div>
+            </form>
+          </div>
+          <div class="lg:col-span-3 rounded-2xl bg-white border border-black/5 p-6">
+            <h2 class="font-serif text-2xl font-bold">Fichas</h2>
+            <div id="prof-list" class="mt-5 flex flex-col gap-3"></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="admin-section hidden" data-section="servicios">
+        <div class="grid grid-cols-1 lg:grid-cols-5 gap-6">
+          <div class="lg:col-span-2 rounded-2xl bg-white border border-black/5 p-6">
+            <h2 id="svc-form-title" class="font-serif text-2xl font-bold">Nuevo servicio</h2>
+            <form id="svc-form" class="mt-5 flex flex-col gap-3">
+              <input type="hidden" id="svc-original-id" />
+              <label class="text-xs font-semibold text-black/50">Categoría
+                <select id="svc-category" class="mt-1 w-full rounded-xl border border-black/10 bg-white px-3 py-2.5 text-sm">
+                  <option value="psiquiatria">Psiquiatría</option>
+                  <option value="psicologia">Psicología</option>
+                  <option value="terapias">Terapias Grupales</option>
+                  <option value="nutricion">Nutrición</option>
+                  <option value="fisioterapia">Terapia Física</option>
+                  <option value="cursos">Cursos y Talleres</option>
+                </select>
+              </label>
+              <label class="text-xs font-semibold text-black/50">Nombre
+                <input type="text" id="svc-name" required class="mt-1 w-full rounded-xl border border-black/10 bg-white px-3 py-2.5 text-sm" />
+              </label>
+              <label class="text-xs font-semibold text-black/50">Ícono (emoji o texto)
+                <input type="text" id="svc-icon" class="mt-1 w-full rounded-xl border border-black/10 bg-white px-3 py-2.5 text-sm" />
+              </label>
+              <label class="text-xs font-semibold text-black/50">Descripción
+                <textarea id="svc-description" rows="4" required class="mt-1 w-full rounded-xl border border-black/10 bg-white px-3 py-2.5 text-sm resize-y"></textarea>
+              </label>
+              <label class="text-xs font-semibold text-black/50">Detalle (opcional)
+                <textarea id="svc-detail" rows="3" class="mt-1 w-full rounded-xl border border-black/10 bg-white px-3 py-2.5 text-sm resize-y"></textarea>
+              </label>
+              <div class="grid grid-cols-2 gap-3">
+                <label class="text-xs font-semibold text-black/50">Rating
+                  <input type="number" id="svc-rating" value="0" min="0" max="5" step="0.1" class="mt-1 w-full rounded-xl border border-black/10 bg-white px-3 py-2.5 text-sm" />
+                </label>
+                <label class="text-xs font-semibold text-black/50">Reseñas
+                  <input type="number" id="svc-reviews" value="0" min="0" class="mt-1 w-full rounded-xl border border-black/10 bg-white px-3 py-2.5 text-sm" />
+                </label>
+              </div>
+              <div id="svc-msg" class="hidden text-xs text-center p-2.5 rounded-xl"></div>
+              <div class="flex gap-2">
+                <button type="submit" class="flex-1 rounded-xl bg-primary px-4 py-2.5 text-sm font-semibold text-white hover:bg-primary-dark transition-colors">Guardar</button>
+                <button type="button" id="svc-cancel" class="hidden rounded-xl border border-black/10 px-4 py-2.5 text-sm font-semibold text-black/50 hover:border-black/20 transition-colors">Cancelar</button>
+              </div>
+            </form>
+          </div>
+          <div class="lg:col-span-3 rounded-2xl bg-white border border-black/5 p-6">
+            <h2 class="font-serif text-2xl font-bold">Catálogo de servicios</h2>
+            <div id="svc-list" class="mt-5 flex flex-col gap-3"></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="admin-section hidden" data-section="citas">
+        <div class="rounded-2xl bg-white border border-black/5 p-6">
+          <div class="flex items-start justify-between gap-4 flex-wrap mb-5">
+            <h2 class="font-serif text-2xl font-bold">Citas</h2>
+            <div class="flex gap-2 flex-wrap">
+              <input type="search" id="appt-search" placeholder="Buscar paciente o profesional" class="rounded-xl border border-black/10 bg-white px-3 py-2 text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/10" />
+              <select id="appt-status" class="rounded-xl border border-black/10 bg-white px-3 py-2 text-sm">
+                <option value="">Todos los estados</option>
+                <option value="pendiente">Pendiente</option>
+                <option value="proxima">Próxima</option>
+                <option value="confirmada">Confirmada</option>
+                <option value="atendida">Atendida</option>
+                <option value="cancelada">Cancelada</option>
+                <option value="no_asistio">No asistió</option>
+                <option value="pasada">Pasada</option>
+              </select>
+            </div>
+          </div>
+          <div id="appt-msg" class="hidden mb-4 text-xs text-center p-3 rounded-xl"></div>
+          <div id="appt-list" class="flex flex-col gap-3"></div>
+        </div>
+      </section>
+
+      <section class="admin-section hidden" data-section="usuarios">
+        <div class="rounded-2xl bg-white border border-black/5 p-6">
+          <div class="flex items-start justify-between gap-4 flex-wrap mb-5">
+            <h2 class="font-serif text-2xl font-bold">Usuarios</h2>
+            <input type="search" id="user-search" placeholder="Buscar por nombre o correo" class="rounded-xl border border-black/10 bg-white px-3 py-2 text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/10" />
+          </div>
+          <div id="user-msg" class="hidden mb-4 text-xs text-center p-3 rounded-xl"></div>
+          <div id="user-list" class="flex flex-col gap-3"></div>
+        </div>
+      </section>
+
+      <section class="admin-section hidden" data-section="mensajes">
+        <div class="rounded-2xl bg-white border border-black/5 p-6">
+          <div class="flex items-start justify-between gap-4 flex-wrap mb-5">
+            <h2 class="font-serif text-2xl font-bold">Mensajes de contacto</h2>
+            <select id="msg-status" class="rounded-xl border border-black/10 bg-white px-3 py-2 text-sm">
+              <option value="">Todos</option>
+              <option value="nuevo">Nuevos</option>
+              <option value="leido">Leídos</option>
+              <option value="respondido">Respondidos</option>
+            </select>
+          </div>
+          <div id="messages-msg" class="hidden mb-4 text-xs text-center p-3 rounded-xl"></div>
+          <div id="messages-list" class="flex flex-col gap-3"></div>
+        </div>
+      </section>
+
+      <section class="admin-section hidden" data-section="comentarios">
+        <div class="rounded-2xl bg-white border border-black/5 p-6">
+          <h2 class="font-serif text-2xl font-bold">Comentarios</h2>
+          <p class="mt-1 text-sm text-black/50">Modera las opiniones publicadas en los perfiles.</p>
+          <div id="comments-msg" class="hidden mt-4 text-xs text-center p-3 rounded-xl"></div>
+          <div id="comments-list" class="mt-5 flex flex-col gap-3"></div>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <script src="js/supabase-config.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script src="js/supabase-client.js"></script>
+<script src="js/realtime.js"></script>
+<script src="js/session.js"></script>
+<script src="js/admin.js"></script>
+</body>
+</html>
