@@ -233,6 +233,23 @@
             <input type="search" id="user-search" placeholder="Buscar por nombre o correo" class="rounded-xl border border-black/10 bg-white px-3 py-2 text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/10" />
           </div>
           <div id="user-msg" class="hidden mb-4 text-xs text-center p-3 rounded-xl"></div>
+          <form id="user-form" class="mb-5 grid gap-3 md:grid-cols-2 rounded-2xl border border-black/5 bg-neutral-50 p-4">
+            <p class="md:col-span-2 text-sm font-semibold">Crear usuario</p>
+            <input id="ur-name" type="text" placeholder="Nombre" class="rounded-xl border border-black/10 bg-white px-3 py-2 text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/10" />
+            <input id="ur-lastname" type="text" placeholder="Apellidos" class="rounded-xl border border-black/10 bg-white px-3 py-2 text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/10" />
+            <input id="ur-email" type="email" required placeholder="Correo electrónico *" class="rounded-xl border border-black/10 bg-white px-3 py-2 text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/10" />
+            <input id="ur-phone" type="text" placeholder="Teléfono (opcional)" class="rounded-xl border border-black/10 bg-white px-3 py-2 text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/10" />
+            <input id="ur-password" type="text" required minlength="6" placeholder="Contraseña temporal (mín. 6) *" class="rounded-xl border border-black/10 bg-white px-3 py-2 text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/10" />
+            <select id="ur-role" class="rounded-xl border border-black/10 bg-white px-3 py-2 text-sm">
+              <option value="profesional">Profesional</option>
+              <option value="paciente">Paciente</option>
+              <option value="admin">Administrador</option>
+            </select>
+            <select id="ur-professional" class="md:col-span-2 rounded-xl border border-black/10 bg-white px-3 py-2 text-sm">
+              <option value="">Vincular a ficha profesional (opcional)</option>
+            </select>
+            <button type="submit" class="md:col-span-2 rounded-full bg-primary px-5 py-2.5 text-sm font-semibold text-white hover:bg-primary-dark transition-colors">Crear usuario</button>
+          </form>
           <div id="user-list" class="flex flex-col gap-3"></div>
         </div>
       </section>

@@ -546,7 +546,16 @@
     }
     users = data || [];
     users.forEach(function (u) { profileById[u.id] = u; });
+    fillProfessionalOptions();
     renderUsers();
+  }
+
+  function fillProfessionalOptions() {
+    const select = document.getElementById('ur-professional');
+    if (!select) return;
+    const free = (professionals || []).filter(p => !p.user_id);
+    select.innerHTML = '<option value="">Vincular a ficha profesional (opcional)</option>' +
+      free.map(p => '<option value="' + escapeHtml(p.id) + '">' + escapeHtml(p.name) + '</option>').join('');
   }
 
   function fichaForUser(userId) {
@@ -585,6 +594,44 @@
   }
 
   document.getElementById('user-search').addEventListener('input', renderUsers);
+
+  document.getElementById('user-form').addEventListener('submit', async function (e) {
+    e.preventDefault();
+    const btn = e.target.querySelector('button[type="submit"]');
+    btn.disabled = true;
+
+    const payload = {
+      name: document.getElementById('ur-name').value.trim(),
+      lastname: document.getElementById('ur-lastname').value.trim(),
+      email: document.getElementById('ur-email').value.trim(),
+      phone: document.getElementById('ur-phone').value.trim(),
+      password: document.getElementById('ur-password').value,
+      role: document.getElementById('ur-role').value,
+      professional_id: document.getElementById('ur-professional').value || null
+    };
+
+    const { data, error } = await sb.functions.invoke('create-user', { body: payload });
+    btn.disabled = false;
+
+    if (error) {
+      let msg = 'No se pudo crear el usuario. ¿Está desplegada la función create-user?';
+      try {
+        const body = await error.context.json();
+        if (body && body.error) msg = body.error;
+      } catch (_) { /* sin cuerpo */ }
+      showMsg('user-msg', msg, false);
+      return;
+    }
+    if (data && data.error) {
+      showMsg('user-msg', data.error, false);
+      return;
+    }
+
+    const created = payload.email;
+    e.target.reset();
+    showMsg('user-msg', 'Usuario creado: ' + created + '. Comparte la contraseña temporal; podrá cambiarla luego.', true);
+    await loadUsersTab();
+  });
 
   document.getElementById('user-list').addEventListener('change', async function (e) {
     const select = e.target.closest('[data-user-role]');

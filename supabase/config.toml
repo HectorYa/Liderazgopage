@@ -1,0 +1,7 @@
+# Configuración mínima para desplegar Edge Functions con la CLI de Supabase.
+# Uso: supabase functions deploy create-user --project-ref tqqnyrvxzsftwmxzkeph
+
+project_id = "tqqnyrvxzsftwmxzkeph"
+
+[functions.create-user]
+verify_jwt = true
