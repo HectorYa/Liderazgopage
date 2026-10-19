@@ -174,7 +174,10 @@
     }
 
     wrap.innerHTML = professionals.map(function (p) {
-      const linked = p.user_id ? (profileById[p.user_id] ? fullName(profileById[p.user_id]) : p.user_id.slice(0, 8)) : null;
+      const linkedProfile = p.user_id ? profileById[p.user_id] : null;
+      const linked = p.user_id
+        ? ((linkedProfile && linkedProfile.email) || (linkedProfile ? fullName(linkedProfile) : '') || ('ID ' + p.user_id.slice(0, 8)))
+        : null;
       return '<div class="rounded-2xl border border-black/5 bg-neutral-50 p-4 flex items-start gap-3">' +
         '<div class="size-10 shrink-0 rounded-full bg-primary/10 text-primary flex items-center justify-center text-sm font-bold overflow-hidden">' +
           (p.photo_url
@@ -191,6 +194,7 @@
         '</div>' +
         '<div class="flex flex-col gap-1 shrink-0">' +
           '<button type="button" data-edit-prof="' + escapeHtml(p.id) + '" class="text-xs font-semibold text-primary hover:text-primary-dark">Editar</button>' +
+          (p.user_id ? '<button type="button" data-reset-prof="' + escapeHtml(p.id) + '" class="text-xs font-semibold text-black/50 hover:text-black">Restablecer clave</button>' : '') +
           '<button type="button" data-toggle-prof="' + escapeHtml(p.id) + '" class="text-xs font-semibold text-black/50 hover:text-black">' + (p.active ? 'Desactivar' : 'Activar') + '</button>' +
           '<button type="button" data-del-prof="' + escapeHtml(p.id) + '" class="text-xs font-semibold text-red-500 hover:text-red-600">Eliminar</button>' +
         '</div>' +
@@ -348,6 +352,7 @@
     const editBtn = e.target.closest('[data-edit-prof]');
     const toggleBtn = e.target.closest('[data-toggle-prof]');
     const delBtn = e.target.closest('[data-del-prof]');
+    const resetBtn = e.target.closest('[data-reset-prof]');
 
     if (editBtn) {
       const p = professionalsById[editBtn.dataset.editProf];
@@ -380,6 +385,21 @@
       if (error) { showMsg('prof-msg', 'No se pudo cambiar la visibilidad.', false); return; }
       showMsg('prof-msg', 'Visibilidad actualizada.', true);
       await Promise.all([loadProfessionalsList(), refreshCounts()]);
+    }
+
+    if (resetBtn) {
+      const p = professionalsById[resetBtn.dataset.resetProf];
+      if (!p) return;
+      if (!p.user_id) { showMsg('prof-msg', 'Esta ficha no tiene cuenta de acceso.', false); return; }
+      const linked = profileById[p.user_id] || null;
+      const email = linked ? linked.email : '';
+      const nueva = window.prompt('Nueva contraseña para ' + (email || p.name) + ' (mín. 6 caracteres). Anótala para enviársela al profesional:', '');
+      if (nueva === null) return;
+      if (nueva.length < 6) { showMsg('prof-msg', 'La contraseña debe tener al menos 6 caracteres.', false); return; }
+      const res = await invokeFunction({ action: 'update', user_id: p.user_id, password: nueva });
+      if (res.error) { showMsg('prof-msg', 'No se pudo restablecer la contraseña: ' + res.error, false); return; }
+      showMsg('prof-msg', 'Contraseña restablecida para ' + (email || p.name) + '.', true);
+      return;
     }
 
     if (delBtn) {
