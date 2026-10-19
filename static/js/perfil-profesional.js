@@ -439,7 +439,7 @@
     showReserveMsg('Cita reservada para el ' + formatDate(date) + ' de ' + selectedTime.inicio + ' a ' + selectedTime.fin + ' (' + (modality === 'virtual' ? 'Virtual' : 'Presencial') + ').', true);
     selectedTime = null;
     selectDay(selectedDay);
-    setReserveButton(true);
+    setReserveButton(false);
   };
 
   function showReserveMsg(text, ok) {
