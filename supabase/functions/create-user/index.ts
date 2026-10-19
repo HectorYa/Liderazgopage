@@ -67,10 +67,44 @@ Deno.serve(async (req) => {
     const phone = body.phone ? String(body.phone).trim() : null;
     const professionalId = body.professional_id ? String(body.professional_id) : null;
 
+    const action = body.action === "update" ? "update" : "create";
+
+    // 4a) Actualizar correo y/o contraseña de una cuenta existente.
+    if (action === "update") {
+      const userId = String(body.user_id ?? "").trim();
+      if (!userId) return json({ error: "Falta el usuario a actualizar." }, 400);
+
+      const updates: Record<string, unknown> = {};
+      if (email) {
+        updates.email = email;
+        updates.email_confirm = true;
+      }
+      if (password) {
+        if (password.length < 6) return json({ error: "La contraseña debe tener al menos 6 caracteres." }, 400);
+        updates.password = password;
+      }
+      if (!Object.keys(updates).length) {
+        return json({ error: "Indica un correo o una contraseña." }, 400);
+      }
+
+      const { error: updateError } = await admin.auth.admin.updateUserById(userId, updates);
+      if (updateError) return json({ error: updateError.message }, 400);
+
+      const patch: Record<string, unknown> = {};
+      if (email) patch.email = email;
+      if (body.role && ["paciente", "profesional", "admin"].includes(body.role)) patch.role = body.role;
+      if (Object.keys(patch).length) {
+        const { error: patchError } = await admin.from("profiles").update(patch).eq("id", userId);
+        if (patchError) return json({ error: patchError.message }, 400);
+      }
+
+      return json({ user_id: userId, email: email || null, updated: true }, 200);
+    }
+
     if (!email || !password) return json({ error: "Correo y contraseña son obligatorios." }, 400);
     if (password.length < 6) return json({ error: "La contraseña debe tener al menos 6 caracteres." }, 400);
 
-    // 4) Crear el usuario ya confirmado (no depende de correos).
+    // 4b) Crear el usuario ya confirmado (no depende de correos).
     const { data: created, error: createError } = await admin.auth.admin.createUser({
       email,
       password,

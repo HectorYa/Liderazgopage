@@ -22,6 +22,7 @@
     pasada: { label: 'Pasada', cls: 'bg-neutral-100 border-black/10 text-black/40' }
   };
   const MESSAGE_STATUS = { nuevo: 'Nuevo', leido: 'Leído', respondido: 'Respondido' };
+  const ACCOUNT_DOMAIN = 'excelentemente.org';
 
   let currentUser = null;
   let currentProfile = {};
@@ -42,6 +43,31 @@
 
   function initials(name) {
     return String(name || '').split(' ').filter(Boolean).map(w => w[0]).join('').toUpperCase().slice(0, 2);
+  }
+
+  function splitName(full) {
+    const parts = String(full || '').trim().split(/\s+/).filter(Boolean);
+    if (!parts.length) return { name: '', lastname: '' };
+    return { name: parts[0], lastname: parts.slice(1).join(' ') };
+  }
+
+  function suggestedEmail(full) {
+    const base = String(full || '')
+      .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+      .toLowerCase().replace(/[^a-z0-9\s]/g, ' ')
+      .trim().split(/\s+/).filter(Boolean).join('.');
+    return base ? base + '@' + ACCOUNT_DOMAIN : '';
+  }
+
+  async function invokeFunction(body) {
+    const { data, error } = await sb.functions.invoke('create-user', { body });
+    if (error) {
+      let msg = 'No se pudo gestionar la cuenta. ¿Está desplegada la función create-user?';
+      try { const b = await error.context.json(); if (b && b.error) msg = b.error; } catch (_) { /* sin cuerpo */ }
+      return { error: msg };
+    }
+    if (data && data.error) return { error: data.error };
+    return { data: data };
   }
 
   function hhmm(value) {
@@ -196,6 +222,8 @@
     document.getElementById('prof-order').value = '0';
     document.getElementById('prof-active').checked = true;
     document.getElementById('prof-user').value = '';
+    document.getElementById('prof-email').value = '';
+    document.getElementById('prof-password').value = '';
     document.getElementById('prof-form-title').textContent = 'Nuevo profesional';
     document.getElementById('prof-cancel').classList.add('hidden');
   }
@@ -229,6 +257,17 @@
       return;
     }
 
+    const accountEmail = document.getElementById('prof-email').value.trim();
+    const accountPassword = document.getElementById('prof-password').value;
+    if (!userId && ((accountEmail && !accountPassword) || (accountPassword && !accountEmail))) {
+      showMsg('prof-msg', 'Para crear la cuenta de acceso indica correo y contraseña.', false);
+      return;
+    }
+    if (accountPassword && accountPassword.length < 6) {
+      showMsg('prof-msg', 'La contraseña debe tener al menos 6 caracteres.', false);
+      return;
+    }
+
     let error;
     if (originalId) {
       const res = await sb.from('professionals').update(payload).eq('id', originalId);
@@ -249,17 +288,61 @@
     if (userId) {
       await sb.from('profiles').update({ role: 'profesional' }).eq('id', userId);
     }
+
+    let accountUserId = userId;
+    let accountNote = '';
+
+    if (accountEmail || accountPassword) {
+      if (userId) {
+        const res = await invokeFunction({
+          action: 'update',
+          user_id: userId,
+          email: accountEmail || undefined,
+          password: accountPassword || undefined
+        });
+        if (res.error) {
+          showMsg('prof-msg', 'Ficha guardada, pero la cuenta no se pudo actualizar: ' + res.error, false);
+          await Promise.all([loadProfessionalsList(), refreshCounts()]);
+          return;
+        }
+        accountNote = ' Cuenta actualizada.';
+      } else {
+        const nameParts = splitName(payload.name);
+        const res = await invokeFunction({
+          action: 'create',
+          email: accountEmail,
+          password: accountPassword,
+          role: 'profesional',
+          professional_id: originalId || id,
+          name: nameParts.name,
+          lastname: nameParts.lastname
+        });
+        if (res.error) {
+          showMsg('prof-msg', 'Ficha guardada, pero no se pudo crear la cuenta: ' + res.error, false);
+          await Promise.all([loadProfessionalsList(), refreshCounts()]);
+          return;
+        }
+        accountUserId = res.data && res.data.user_id;
+        accountNote = ' Cuenta creada y vinculada.';
+      }
+    }
+
     const previous = originalId ? professionalsById[originalId] : null;
-    if (previous && previous.user_id && previous.user_id !== userId) {
+    if (previous && previous.user_id && previous.user_id !== (accountUserId || userId)) {
       await sb.from('profiles').update({ role: 'paciente' }).eq('id', previous.user_id).eq('role', 'profesional');
     }
 
-    showMsg('prof-msg', originalId ? 'Ficha actualizada.' : 'Ficha creada.', true);
+    showMsg('prof-msg', (originalId ? 'Ficha actualizada.' : 'Ficha creada.') + accountNote, true);
     resetProfForm();
     await Promise.all([loadProfessionalsList(), refreshCounts()]);
   });
 
   document.getElementById('prof-cancel').addEventListener('click', resetProfForm);
+
+  document.getElementById('prof-suggest').addEventListener('click', function () {
+    const email = suggestedEmail(document.getElementById('prof-name').value);
+    if (email) document.getElementById('prof-email').value = email;
+  });
 
   document.getElementById('prof-list').addEventListener('click', async function (e) {
     const editBtn = e.target.closest('[data-edit-prof]');
@@ -282,6 +365,9 @@
       document.getElementById('prof-order').value = p.display_order || 0;
       document.getElementById('prof-active').checked = !!p.active;
       document.getElementById('prof-user').value = p.user_id || '';
+      const linkedProfile = p.user_id ? profileById[p.user_id] : null;
+      document.getElementById('prof-email').value = linkedProfile ? (linkedProfile.email || '') : '';
+      document.getElementById('prof-password').value = '';
       document.getElementById('prof-form-title').textContent = 'Editar profesional';
       document.getElementById('prof-cancel').classList.remove('hidden');
       document.getElementById('prof-form').scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -610,20 +696,11 @@
       professional_id: document.getElementById('ur-professional').value || null
     };
 
-    const { data, error } = await sb.functions.invoke('create-user', { body: payload });
+    const res = await invokeFunction(payload);
     btn.disabled = false;
 
-    if (error) {
-      let msg = 'No se pudo crear el usuario. ¿Está desplegada la función create-user?';
-      try {
-        const body = await error.context.json();
-        if (body && body.error) msg = body.error;
-      } catch (_) { /* sin cuerpo */ }
-      showMsg('user-msg', msg, false);
-      return;
-    }
-    if (data && data.error) {
-      showMsg('user-msg', data.error, false);
+    if (res.error) {
+      showMsg('user-msg', res.error, false);
       return;
     }
 
