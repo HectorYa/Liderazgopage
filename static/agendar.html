@@ -89,8 +89,33 @@
         <div id="agenda-msg" class="hidden text-xs text-center p-3 rounded-xl"></div>
 
         <button id="agenda-submit" type="button" class="w-full rounded-xl bg-gradient-to-r from-primary to-primary-light px-4 py-4 text-sm font-semibold text-white shadow-lg shadow-primary/20 hover:shadow-primary/30 hover:scale-[1.01] active:scale-[0.99] transition-all disabled:opacity-50 disabled:cursor-not-allowed">
-          Confirmar cita
+          Continuar al pago
         </button>
+      </div>
+
+      <div id="payment-step" class="hidden scroll-mt-24">
+        <div class="mx-auto max-w-md text-center">
+          <span class="inline-flex items-center gap-2 rounded-full border border-amber-200 bg-amber-50 px-3 py-1 text-[11px] font-semibold text-amber-700">Pago simulado</span>
+          <h2 class="mt-4 font-serif text-2xl font-bold">Confirma tu pago</h2>
+          <p class="mt-2 text-sm text-black/50">Este es un pago de prueba: no se realizará ningún cobro real. Tu horario ya quedó reservado.</p>
+
+          <div id="payment-summary" class="mt-5 rounded-2xl border border-black/5 bg-neutral-50 p-4 text-left text-sm"></div>
+
+          <div class="mt-5 flex justify-center">
+            <div id="payment-qr" class="rounded-2xl border border-black/10 bg-white p-3"></div>
+          </div>
+
+          <button id="payment-confirm" type="button" class="mt-5 w-full rounded-xl bg-gradient-to-r from-primary to-primary-light px-4 py-4 text-sm font-semibold text-white shadow-lg shadow-primary/20 hover:shadow-primary/30 hover:scale-[1.01] active:scale-[0.99] transition-all disabled:opacity-50 disabled:cursor-not-allowed">
+            Ya realicé el pago
+          </button>
+
+          <div id="payment-success" class="hidden mt-5 rounded-2xl border border-green-200 bg-green-50 p-4 text-sm font-semibold text-green-700">
+            Pago exitoso. Redirigiendo a tus citas...
+          </div>
+          <div id="payment-msg" class="hidden mt-4 rounded-xl p-3 text-xs"></div>
+
+          <a href="dashboard.html" class="mt-4 inline-block text-xs font-semibold text-black/40 hover:text-primary">Ver mis citas</a>
+        </div>
       </div>
     </div>
 
@@ -118,5 +143,7 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <script src="js/supabase-client.js"></script>
 <script src="js/realtime.js"></script>
+<script src="js/site-config.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
 <script src="js/agendar.js"></script>
 </body></html>

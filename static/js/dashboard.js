@@ -23,6 +23,18 @@ let currentSection = 'historial';
   document.getElementById('user-avatar').textContent = (currentUser.name.charAt(0) + currentUser.lastname.charAt(0)).toUpperCase();
   document.getElementById('user-name-header').textContent = (currentUser.name + ' ' + currentUser.lastname).trim();
 
+  const params = new URLSearchParams(window.location.search);
+  if (params.get('pago') === 'exitoso') {
+    const banner = document.getElementById('payment-banner');
+    if (banner) {
+      banner.classList.remove('hidden');
+      setTimeout(function () { banner.classList.add('hidden'); }, 9000);
+    }
+    if (window.history && window.history.replaceState) {
+      window.history.replaceState({}, '', 'dashboard.html');
+    }
+  }
+
   // Perfil
   document.getElementById('prof-name').value = currentUser.name;
   document.getElementById('prof-lastname').value = currentUser.lastname;
@@ -87,6 +99,7 @@ async function renderHistorial() {
 
   const upcomingLabel = { pendiente: 'Por confirmar', proxima: 'Próxima', confirmada: 'Confirmada' };
   const pastLabel = { cancelada: 'Cancelada', atendida: 'Atendida', no_asistio: 'No asistió', pasada: 'Pasada' };
+  const meetUrl = (window.SITE_CONFIG && window.SITE_CONFIG.meetingUrl) || '';
 
   if (proximas.length === 0) {
     proxEl.innerHTML = '';
@@ -103,7 +116,12 @@ async function renderHistorial() {
         <div class="text-right shrink-0">
           <p class="text-sm font-medium">${formatDate(a.date)}</p>
           <p class="text-xs text-black/40">${formatTime(a.start_time)} - ${formatTime(a.end_time)}</p>
-          <button type="button" onclick="cancelAppointment(${Number(a.id)})" class="mt-1 text-[10px] font-semibold text-red-500 hover:text-red-600">Cancelar</button>
+          ${a.modality === 'virtual'
+            ? (meetUrl
+                ? `<a href="${escapeHtml(meetUrl)}" target="_blank" rel="noopener" class="mt-1 inline-block text-[10px] font-semibold text-primary hover:text-primary-dark">Unirse a la reunión</a>`
+                : `<p class="mt-1 text-[10px] text-black/40">Enlace pendiente</p>`)
+            : ''}
+          <button type="button" onclick="cancelAppointment(${Number(a.id)})" class="mt-1 block w-full text-[10px] font-semibold text-red-500 hover:text-red-600">Cancelar</button>
         </div>
         <span class="px-3 py-1 rounded-full bg-primary/10 text-primary text-[10px] font-semibold uppercase">${upcomingLabel[a.status] || 'Próxima'}</span>
       </div>

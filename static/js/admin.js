@@ -33,6 +33,13 @@
   let appointments = [];
   let messages = [];
 
+  let profPage = 1;
+  let svcPage = 1;
+  let apptPage = 1;
+  let userPage = 1;
+  let msgPage = 1;
+  let commentPage = 1;
+
   const loaded = { profesionales: false, servicios: false, citas: false, usuarios: false, mensajes: false, comentarios: false };
 
   function escapeHtml(str) {
@@ -122,14 +129,21 @@
   function setTab(name) {
     document.querySelectorAll('.admin-tab').forEach(function (btn) {
       const active = btn.dataset.tab === name;
-      btn.classList.toggle('border-primary', active);
+      btn.classList.toggle('bg-primary/10', active);
       btn.classList.toggle('text-primary', active);
-      btn.classList.toggle('border-transparent', !active);
-      btn.classList.toggle('text-black/40', !active);
+      btn.classList.toggle('font-semibold', active);
+      btn.classList.toggle('text-black/60', !active);
     });
     document.querySelectorAll('.admin-section').forEach(function (section) {
       section.classList.toggle('hidden', section.dataset.section !== name);
     });
+
+    if (window.innerWidth < 1024) {
+      const sidebar = document.getElementById('admin-sidebar');
+      const overlay = document.getElementById('admin-overlay');
+      if (sidebar) sidebar.classList.remove('open');
+      if (overlay) overlay.classList.add('hidden');
+    }
 
     if (name === 'profesionales' && !loaded.profesionales) loadProfessionalsTab();
     if (name === 'servicios' && !loaded.servicios) loadServicesTab();
@@ -138,6 +152,14 @@
     if (name === 'mensajes' && !loaded.mensajes) loadMessages();
     if (name === 'comentarios' && !loaded.comentarios) loadComments();
   }
+
+  window.toggleAdminSidebar = function () {
+    const sidebar = document.getElementById('admin-sidebar');
+    const overlay = document.getElementById('admin-overlay');
+    if (!sidebar || !overlay) return;
+    const open = sidebar.classList.toggle('open');
+    overlay.classList.toggle('hidden', !open);
+  };
 
   document.querySelectorAll('.admin-tab').forEach(function (btn) {
     btn.addEventListener('click', function () { setTab(btn.dataset.tab); });
@@ -158,22 +180,45 @@
       .order('display_order', { ascending: true })
       .order('name', { ascending: true });
 
-    const wrap = document.getElementById('prof-list');
     if (error) {
-      wrap.innerHTML = '<p class="rounded-xl border border-red-100 bg-red-50 p-4 text-center text-sm text-red-600">No se pudieron cargar las fichas.</p>';
+      document.getElementById('prof-list').innerHTML = '<p class="rounded-xl border border-red-100 bg-red-50 p-4 text-center text-sm text-red-600">No se pudieron cargar las fichas.</p>';
+      document.getElementById('prof-pagination').innerHTML = '';
       return;
     }
 
     professionals = data || [];
     professionalsById = {};
     professionals.forEach(function (p) { professionalsById[p.id] = p; });
+    renderProfessionalsList();
+  }
 
-    if (!professionals.length) {
-      wrap.innerHTML = '<p class="rounded-xl border border-black/5 bg-neutral-50 p-6 text-center text-sm text-black/40">Aún no hay profesionales.</p>';
+  function renderProfessionalsList() {
+    const term = (document.getElementById('prof-search').value || '').trim().toLowerCase();
+    const category = document.getElementById('prof-category-filter').value;
+    const activeFilter = document.getElementById('prof-active-filter').value;
+
+    const list = professionals.filter(function (p) {
+      if (category && p.category !== category) return false;
+      if (activeFilter === 'active' && !p.active) return false;
+      if (activeFilter === 'inactive' && p.active) return false;
+      if (!term) return true;
+      const linkedProfile = p.user_id ? profileById[p.user_id] : null;
+      const haystack = [p.name, p.role, p.specialty, p.id, linkedProfile ? linkedProfile.email : ''].join(' ').toLowerCase();
+      return haystack.indexOf(term) !== -1;
+    });
+
+    const wrap = document.getElementById('prof-list');
+    const pager = document.getElementById('prof-pagination');
+    if (!list.length) {
+      wrap.innerHTML = '<p class="rounded-xl border border-black/5 bg-neutral-50 p-6 text-center text-sm text-black/40">No hay fichas con esos filtros.</p>';
+      pager.innerHTML = '';
       return;
     }
 
-    wrap.innerHTML = professionals.map(function (p) {
+    const page = paginateItems(list, profPage, 6);
+    profPage = page.page;
+
+    wrap.innerHTML = page.items.map(function (p) {
       const linkedProfile = p.user_id ? profileById[p.user_id] : null;
       const linked = p.user_id
         ? ((linkedProfile && linkedProfile.email) || (linkedProfile ? fullName(linkedProfile) : '') || ('ID ' + p.user_id.slice(0, 8)))
@@ -200,7 +245,20 @@
         '</div>' +
       '</div>';
     }).join('');
+
+    renderPager(pager, page, function (nextPage) {
+      profPage = nextPage;
+      renderProfessionalsList();
+    });
   }
+
+  ['prof-search', 'prof-category-filter', 'prof-active-filter'].forEach(function (id) {
+    const el = document.getElementById(id);
+    if (!el) return;
+    const handler = function () { profPage = 1; renderProfessionalsList(); };
+    el.addEventListener('input', handler);
+    el.addEventListener('change', handler);
+  });
 
   async function loadUserOptions() {
     const { data } = await sb
@@ -429,19 +487,37 @@
       .order('category', { ascending: true })
       .order('name', { ascending: true });
 
-    const wrap = document.getElementById('svc-list');
     if (error) {
-      wrap.innerHTML = '<p class="rounded-xl border border-red-100 bg-red-50 p-4 text-center text-sm text-red-600">No se pudieron cargar los servicios.</p>';
+      document.getElementById('svc-list').innerHTML = '<p class="rounded-xl border border-red-100 bg-red-50 p-4 text-center text-sm text-red-600">No se pudieron cargar los servicios.</p>';
+      document.getElementById('svc-pagination').innerHTML = '';
       return;
     }
 
-    if (!data || !data.length) {
-      wrap.innerHTML = '<p class="rounded-xl border border-black/5 bg-neutral-50 p-6 text-center text-sm text-black/40">Aún no hay servicios.</p>';
+    window._services = data || [];
+    renderServicesList();
+  }
+
+  function renderServicesList() {
+    const term = (document.getElementById('svc-search').value || '').trim().toLowerCase();
+    const category = document.getElementById('svc-category-filter').value;
+    const list = (window._services || []).filter(function (s) {
+      if (category && s.category !== category) return false;
+      if (!term) return true;
+      return (s.name + ' ' + s.description + ' ' + s.category).toLowerCase().indexOf(term) !== -1;
+    });
+
+    const wrap = document.getElementById('svc-list');
+    const pager = document.getElementById('svc-pagination');
+    if (!list.length) {
+      wrap.innerHTML = '<p class="rounded-xl border border-black/5 bg-neutral-50 p-6 text-center text-sm text-black/40">No hay servicios con esos filtros.</p>';
+      pager.innerHTML = '';
       return;
     }
 
-    window._services = data;
-    wrap.innerHTML = data.map(function (s) {
+    const page = paginateItems(list, svcPage, 6);
+    svcPage = page.page;
+
+    wrap.innerHTML = page.items.map(function (s) {
       return '<div class="rounded-2xl border border-black/5 bg-neutral-50 p-4 flex items-start justify-between gap-3">' +
         '<div class="min-w-0">' +
           '<p class="text-sm font-semibold">' + escapeHtml(s.name) + '</p>' +
@@ -454,7 +530,20 @@
         '</div>' +
       '</div>';
     }).join('');
+
+    renderPager(pager, page, function (nextPage) {
+      svcPage = nextPage;
+      renderServicesList();
+    });
   }
+
+  ['svc-search', 'svc-category-filter'].forEach(function (id) {
+    const el = document.getElementById(id);
+    if (!el) return;
+    const handler = function () { svcPage = 1; renderServicesList(); };
+    el.addEventListener('input', handler);
+    el.addEventListener('change', handler);
+  });
 
   function resetSvcForm() {
     document.getElementById('svc-form').reset();
@@ -571,16 +660,21 @@
       if (!term) return true;
       const patient = (profileById[a.user_id] || {});
       const prof = (professionalsById[a.professional_id] || {});
-      return (fullName(patient) + ' ' + (patient.email || '') + ' ' + (prof.name || '')).toLowerCase().indexOf(term) !== -1;
+      return (fullName(patient) + ' ' + (patient.email || '') + ' ' + (prof.name || '') + ' ' + (a.service_label || '') + ' ' + (a.modality || '')).toLowerCase().indexOf(term) !== -1;
     });
 
     const wrap = document.getElementById('appt-list');
+    const pager = document.getElementById('appt-pagination');
     if (!list.length) {
       wrap.innerHTML = '<p class="rounded-xl border border-black/5 bg-neutral-50 p-6 text-center text-sm text-black/40">No hay citas con esos filtros.</p>';
+      pager.innerHTML = '';
       return;
     }
 
-    wrap.innerHTML = list.map(function (a) {
+    const page = paginateItems(list, apptPage, 8);
+    apptPage = page.page;
+
+    wrap.innerHTML = page.items.map(function (a) {
       const meta = STATUS_META[a.status] || STATUS_META.proxima;
       const patient = profileById[a.user_id] || {};
       const prof = professionalsById[a.professional_id] || {};
@@ -605,10 +699,15 @@
         '</div>' +
       '</article>';
     }).join('');
+
+    renderPager(pager, page, function (nextPage) {
+      apptPage = nextPage;
+      renderAppointments();
+    });
   }
 
-  document.getElementById('appt-status').addEventListener('change', renderAppointments);
-  document.getElementById('appt-search').addEventListener('input', renderAppointments);
+  document.getElementById('appt-status').addEventListener('change', function () { apptPage = 1; renderAppointments(); });
+  document.getElementById('appt-search').addEventListener('input', function () { apptPage = 1; renderAppointments(); });
 
   document.getElementById('appt-list').addEventListener('change', async function (e) {
     const select = e.target.closest('[data-appt-status]');
@@ -670,18 +769,25 @@
 
   function renderUsers() {
     const term = document.getElementById('user-search').value.trim().toLowerCase();
+    const role = document.getElementById('user-role-filter').value;
     const list = users.filter(function (u) {
+      if (role && u.role !== role) return false;
       if (!term) return true;
-      return (fullName(u) + ' ' + (u.email || '')).toLowerCase().indexOf(term) !== -1;
+      return (fullName(u) + ' ' + (u.email || '') + ' ' + (u.phone || '')).toLowerCase().indexOf(term) !== -1;
     });
 
     const wrap = document.getElementById('user-list');
+    const pager = document.getElementById('user-pagination');
     if (!list.length) {
       wrap.innerHTML = '<p class="rounded-xl border border-black/5 bg-neutral-50 p-6 text-center text-sm text-black/40">Sin resultados.</p>';
+      pager.innerHTML = '';
       return;
     }
 
-    wrap.innerHTML = list.map(function (u) {
+    const page = paginateItems(list, userPage, 8);
+    userPage = page.page;
+
+    wrap.innerHTML = page.items.map(function (u) {
       const ficha = fichaForUser(u.id);
       const isSelf = currentUser && u.id === currentUser.id;
       return '<div class="rounded-2xl border border-black/5 bg-neutral-50 p-4 flex flex-col md:flex-row md:items-center gap-3">' +
@@ -691,15 +797,21 @@
           '<p class="mt-1 text-xs text-black/40">' + (ficha ? 'Ficha: ' + escapeHtml(ficha.name) : 'Sin ficha vinculada') + '</p>' +
         '</div>' +
         '<select data-user-role="' + escapeHtml(u.id) + '"' + (isSelf ? ' disabled' : '') + ' class="rounded-xl border border-black/10 bg-white px-3 py-2 text-xs disabled:opacity-50">' +
-          Object.keys(ROLE_LABEL).map(function (role) {
-            return '<option value="' + role + '"' + (u.role === role ? ' selected' : '') + '>' + ROLE_LABEL[role] + '</option>';
+          Object.keys(ROLE_LABEL).map(function (roleKey) {
+            return '<option value="' + roleKey + '"' + (u.role === roleKey ? ' selected' : '') + '>' + ROLE_LABEL[roleKey] + '</option>';
           }).join('') +
         '</select>' +
       '</div>';
     }).join('');
+
+    renderPager(pager, page, function (nextPage) {
+      userPage = nextPage;
+      renderUsers();
+    });
   }
 
-  document.getElementById('user-search').addEventListener('input', renderUsers);
+  document.getElementById('user-search').addEventListener('input', function () { userPage = 1; renderUsers(); });
+  document.getElementById('user-role-filter').addEventListener('change', function () { userPage = 1; renderUsers(); });
 
   document.getElementById('user-form').addEventListener('submit', async function (e) {
     e.preventDefault();
@@ -742,6 +854,7 @@
     const u = users.find(x => x.id === id);
     if (u) u.role = select.value;
     showMsg('user-msg', 'Rol actualizado. Recuerda vincular su ficha si es profesional.', true);
+    renderUsers();
     refreshCounts();
   });
 
@@ -763,15 +876,25 @@
 
   function renderMessages() {
     const status = document.getElementById('msg-status').value;
-    const list = messages.filter(m => !status || m.status === status);
+    const term = document.getElementById('msg-search').value.trim().toLowerCase();
+    const list = messages.filter(function (m) {
+      if (status && m.status !== status) return false;
+      if (!term) return true;
+      return (m.name + ' ' + m.email + ' ' + (m.phone || '') + ' ' + (m.service || '') + ' ' + m.message).toLowerCase().indexOf(term) !== -1;
+    });
     const wrap = document.getElementById('messages-list');
+    const pager = document.getElementById('messages-pagination');
 
     if (!list.length) {
-      wrap.innerHTML = '<p class="rounded-xl border border-black/5 bg-neutral-50 p-6 text-center text-sm text-black/40">No hay mensajes.</p>';
+      wrap.innerHTML = '<p class="rounded-xl border border-black/5 bg-neutral-50 p-6 text-center text-sm text-black/40">No hay mensajes con esos filtros.</p>';
+      pager.innerHTML = '';
       return;
     }
 
-    wrap.innerHTML = list.map(function (m) {
+    const page = paginateItems(list, msgPage, 6);
+    msgPage = page.page;
+
+    wrap.innerHTML = page.items.map(function (m) {
       return '<article class="rounded-2xl border border-black/5 bg-neutral-50 p-4 flex flex-col md:flex-row md:items-start gap-4">' +
         '<div class="flex-1 min-w-0">' +
           '<div class="flex items-center gap-2 flex-wrap">' +
@@ -796,9 +919,15 @@
         '</div>' +
       '</article>';
     }).join('');
+
+    renderPager(pager, page, function (nextPage) {
+      msgPage = nextPage;
+      renderMessages();
+    });
   }
 
-  document.getElementById('msg-status').addEventListener('change', renderMessages);
+  document.getElementById('msg-status').addEventListener('change', function () { msgPage = 1; renderMessages(); });
+  document.getElementById('msg-search').addEventListener('input', function () { msgPage = 1; renderMessages(); });
 
   document.getElementById('messages-list').addEventListener('change', async function (e) {
     const select = e.target.closest('[data-msg-status]');
@@ -830,9 +959,9 @@
       .select('id,professional_id,author_name,stars,body,created_at')
       .order('created_at', { ascending: false });
 
-    const wrap = document.getElementById('comments-list');
     if (error) {
-      wrap.innerHTML = '<p class="rounded-xl border border-red-100 bg-red-50 p-4 text-center text-sm text-red-600">No se pudieron cargar los comentarios.</p>';
+      document.getElementById('comments-list').innerHTML = '<p class="rounded-xl border border-red-100 bg-red-50 p-4 text-center text-sm text-red-600">No se pudieron cargar los comentarios.</p>';
+      document.getElementById('comments-pagination').innerHTML = '';
       return;
     }
 
@@ -841,13 +970,30 @@
       (profs || []).forEach(function (p) { professionalsById[p.id] = p; });
     }
 
-    if (!data || !data.length) {
-      wrap.innerHTML = '<p class="rounded-xl border border-black/5 bg-neutral-50 p-6 text-center text-sm text-black/40">No hay comentarios.</p>';
+    window._comments = data || [];
+    renderComments();
+  }
+
+  function renderComments() {
+    const term = document.getElementById('comment-search').value.trim().toLowerCase();
+    const list = (window._comments || []).filter(function (c) {
+      if (!term) return true;
+      const prof = professionalsById[c.professional_id] || {};
+      return (c.author_name + ' ' + (prof.name || '') + ' ' + c.body).toLowerCase().indexOf(term) !== -1;
+    });
+
+    const wrap = document.getElementById('comments-list');
+    const pager = document.getElementById('comments-pagination');
+    if (!list.length) {
+      wrap.innerHTML = '<p class="rounded-xl border border-black/5 bg-neutral-50 p-6 text-center text-sm text-black/40">No hay comentarios con esos filtros.</p>';
+      pager.innerHTML = '';
       return;
     }
 
-    window._comments = data;
-    wrap.innerHTML = data.map(function (c) {
+    const page = paginateItems(list, commentPage, 6);
+    commentPage = page.page;
+
+    wrap.innerHTML = page.items.map(function (c) {
       const prof = professionalsById[c.professional_id] || {};
       return '<div class="rounded-2xl border border-black/5 bg-neutral-50 p-4 flex items-start justify-between gap-3">' +
         '<div class="min-w-0">' +
@@ -858,7 +1004,14 @@
         '<button type="button" data-del-comment="' + c.id + '" class="shrink-0 text-xs font-semibold text-red-500 hover:text-red-600">Eliminar</button>' +
       '</div>';
     }).join('');
+
+    renderPager(pager, page, function (nextPage) {
+      commentPage = nextPage;
+      renderComments();
+    });
   }
+
+  document.getElementById('comment-search').addEventListener('input', function () { commentPage = 1; renderComments(); });
 
   document.getElementById('comments-list').addEventListener('click', async function (e) {
     const delBtn = e.target.closest('[data-del-comment]');

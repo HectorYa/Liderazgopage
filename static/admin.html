@@ -23,60 +23,104 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <script>tailwind.config={theme:{extend:{fontFamily:{sans:['Geist','sans-serif'],serif:['Fraunces','serif']},colors:{primary:{DEFAULT:'#1a7a6d',light:'#2aa394',dark:'#145e54'},accent:{DEFAULT:'#e8a838'}}}}}</script>
   <link rel="stylesheet" href="css/styles.css" />
+  <style>
+    @media (max-width: 1023px) {
+      .admin-sidebar { position: fixed; top: 64px; bottom: 0; left: 0; z-index: 50; transform: translateX(-100%); transition: transform .3s; overflow-y: auto; }
+      .admin-sidebar.open { transform: translateX(0); }
+    }
+  </style>
 </head>
 <body class="font-sans antialiased bg-neutral-50 min-h-screen">
-  <header class="bg-white border-b border-black/5">
-    <div class="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between gap-4">
-      <div class="flex items-center gap-3 min-w-0">
+  <header class="sticky top-0 z-40 bg-white/90 backdrop-blur-md border-b border-black/5">
+    <div class="mx-auto flex h-16 max-w-7xl items-center justify-between gap-4 px-4 lg:px-6">
+      <div class="flex min-w-0 items-center gap-3">
+        <button type="button" onclick="toggleAdminSidebar()" class="lg:hidden size-9 rounded-lg border border-black/10 flex items-center justify-center text-black/50 hover:bg-black/5" aria-label="Abrir menú">
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+        </button>
         <a href="index.html" class="font-serif text-xl font-bold text-primary shrink-0">Excelentemente</a>
-        <span class="rounded-full bg-primary/10 px-3 py-1 text-[10px] font-semibold uppercase tracking-wider text-primary">Administración</span>
+        <span class="hidden sm:inline-flex rounded-full bg-primary/10 px-3 py-1 text-[10px] font-semibold uppercase tracking-wider text-primary">Administración</span>
       </div>
       <div class="flex items-center gap-3">
         <span id="admin-name" class="hidden sm:block text-sm text-black/60 truncate max-w-[220px]"></span>
         <div id="admin-avatar" class="size-9 rounded-full bg-primary text-white flex items-center justify-center text-xs font-bold shrink-0"></div>
-        <button type="button" onclick="logout()" class="rounded-full border border-black/10 px-4 py-2 text-xs font-semibold text-black/60 hover:border-red-200 hover:text-red-500 transition-colors">Cerrar sesión</button>
+        <button type="button" onclick="logout()" class="rounded-full border border-black/10 px-3 sm:px-4 py-2 text-xs font-semibold text-black/60 hover:border-red-200 hover:text-red-500 transition-colors"><span class="hidden sm:inline">Cerrar sesión</span><span class="sm:hidden">Salir</span></button>
       </div>
     </div>
   </header>
 
-  <main class="max-w-6xl mx-auto px-6 py-10">
-    <div id="admin-loading" class="text-sm text-black/40">Cargando panel...</div>
-
-    <div id="admin-content" class="hidden">
-      <div class="mb-8">
-        <p class="text-xs uppercase tracking-[0.18em] text-primary font-medium">Panel</p>
-        <h1 class="mt-2 font-serif text-3xl md:text-4xl font-bold tracking-tight">Administración</h1>
-        <p class="mt-2 text-sm text-black/50">Gestiona el catálogo, las citas y los usuarios del centro.</p>
+  <div class="flex min-h-[calc(100vh-64px)]">
+    <aside id="admin-sidebar" class="admin-sidebar w-64 shrink-0 bg-white border-r border-black/5 p-4 lg:p-6 flex flex-col gap-1 lg:sticky lg:top-16 lg:h-[calc(100vh-64px)]">
+      <p class="text-[10px] uppercase tracking-[0.2em] text-black/30 font-medium mb-3 px-3">Módulos</p>
+      <button type="button" data-tab="resumen" class="admin-tab flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm text-black/60 hover:bg-primary/5 hover:text-primary transition-all text-left">
+        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+        Resumen
+      </button>
+      <button type="button" data-tab="profesionales" class="admin-tab flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm text-black/60 hover:bg-primary/5 hover:text-primary transition-all text-left">
+        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        Profesionales
+      </button>
+      <button type="button" data-tab="servicios" class="admin-tab flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm text-black/60 hover:bg-primary/5 hover:text-primary transition-all text-left">
+        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
+        Servicios
+      </button>
+      <button type="button" data-tab="citas" class="admin-tab flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm text-black/60 hover:bg-primary/5 hover:text-primary transition-all text-left">
+        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+        Citas
+      </button>
+      <button type="button" data-tab="usuarios" class="admin-tab flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm text-black/60 hover:bg-primary/5 hover:text-primary transition-all text-left">
+        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        Usuarios
+      </button>
+      <button type="button" data-tab="mensajes" class="admin-tab flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm text-black/60 hover:bg-primary/5 hover:text-primary transition-all text-left">
+        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+        Mensajes
+      </button>
+      <button type="button" data-tab="comentarios" class="admin-tab flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm text-black/60 hover:bg-primary/5 hover:text-primary transition-all text-left">
+        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8z"/></svg>
+        Comentarios
+      </button>
+      <div class="mt-auto pt-4 border-t border-black/5">
+        <a href="profesionales.html" class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm text-black/40 hover:bg-black/5 hover:text-black/60 transition-all">
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+          Ver catálogo
+        </a>
+        <a href="index.html" class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm text-black/40 hover:bg-black/5 hover:text-black/60 transition-all">
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>
+          Volver al sitio
+        </a>
       </div>
+    </aside>
 
-      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-        <div class="rounded-2xl bg-white border border-black/5 p-5">
-          <p class="text-xs text-black/40">Profesionales activos</p>
-          <p id="stat-professionals" class="mt-2 text-3xl font-semibold text-primary">—</p>
-        </div>
-        <div class="rounded-2xl bg-white border border-black/5 p-5">
-          <p class="text-xs text-black/40">Servicios publicados</p>
-          <p id="stat-services" class="mt-2 text-3xl font-semibold text-primary">—</p>
-        </div>
-        <div class="rounded-2xl bg-white border border-black/5 p-5">
-          <p class="text-xs text-black/40">Citas próximas</p>
-          <p id="stat-appointments" class="mt-2 text-3xl font-semibold text-primary">—</p>
-        </div>
-        <div class="rounded-2xl bg-white border border-black/5 p-5">
-          <p class="text-xs text-black/40">Pacientes registrados</p>
-          <p id="stat-patients" class="mt-2 text-3xl font-semibold text-primary">—</p>
-        </div>
-      </div>
+    <div id="admin-overlay" class="fixed inset-0 top-16 z-40 hidden bg-black/30 lg:hidden" onclick="toggleAdminSidebar()"></div>
 
-      <nav class="flex gap-1 overflow-x-auto border-b border-black/5 mb-6" aria-label="Secciones de administración">
-        <button type="button" data-tab="resumen" class="admin-tab shrink-0 px-4 py-3 text-sm font-semibold border-b-2 border-transparent text-black/40 hover:text-primary transition-colors">Resumen</button>
-        <button type="button" data-tab="profesionales" class="admin-tab shrink-0 px-4 py-3 text-sm font-semibold border-b-2 border-transparent text-black/40 hover:text-primary transition-colors">Profesionales</button>
-        <button type="button" data-tab="servicios" class="admin-tab shrink-0 px-4 py-3 text-sm font-semibold border-b-2 border-transparent text-black/40 hover:text-primary transition-colors">Servicios</button>
-        <button type="button" data-tab="citas" class="admin-tab shrink-0 px-4 py-3 text-sm font-semibold border-b-2 border-transparent text-black/40 hover:text-primary transition-colors">Citas</button>
-        <button type="button" data-tab="usuarios" class="admin-tab shrink-0 px-4 py-3 text-sm font-semibold border-b-2 border-transparent text-black/40 hover:text-primary transition-colors">Usuarios</button>
-        <button type="button" data-tab="mensajes" class="admin-tab shrink-0 px-4 py-3 text-sm font-semibold border-b-2 border-transparent text-black/40 hover:text-primary transition-colors">Mensajes</button>
-        <button type="button" data-tab="comentarios" class="admin-tab shrink-0 px-4 py-3 text-sm font-semibold border-b-2 border-transparent text-black/40 hover:text-primary transition-colors">Comentarios</button>
-      </nav>
+    <main class="min-w-0 flex-1 p-4 lg:p-8">
+      <div id="admin-loading" class="text-sm text-black/40">Cargando panel...</div>
+
+      <div id="admin-content" class="hidden">
+        <div class="mb-8">
+          <p class="text-xs uppercase tracking-[0.18em] text-primary font-medium">Panel</p>
+          <h1 class="mt-2 font-serif text-3xl md:text-4xl font-bold tracking-tight">Administración</h1>
+          <p class="mt-2 text-sm text-black/50">Gestiona el catálogo, las citas y los usuarios del centro.</p>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+          <div class="rounded-2xl bg-white border border-black/5 p-5">
+            <p class="text-xs text-black/40">Profesionales activos</p>
+            <p id="stat-professionals" class="mt-2 text-3xl font-semibold text-primary">—</p>
+          </div>
+          <div class="rounded-2xl bg-white border border-black/5 p-5">
+            <p class="text-xs text-black/40">Servicios publicados</p>
+            <p id="stat-services" class="mt-2 text-3xl font-semibold text-primary">—</p>
+          </div>
+          <div class="rounded-2xl bg-white border border-black/5 p-5">
+            <p class="text-xs text-black/40">Citas próximas</p>
+            <p id="stat-appointments" class="mt-2 text-3xl font-semibold text-primary">—</p>
+          </div>
+          <div class="rounded-2xl bg-white border border-black/5 p-5">
+            <p class="text-xs text-black/40">Pacientes registrados</p>
+            <p id="stat-patients" class="mt-2 text-3xl font-semibold text-primary">—</p>
+          </div>
+        </div>
 
       <section class="admin-section" data-section="resumen">
         <div class="rounded-2xl bg-white border border-black/5 p-6">
@@ -161,7 +205,23 @@
           </div>
           <div class="lg:col-span-3 rounded-2xl bg-white border border-black/5 p-6">
             <h2 class="font-serif text-2xl font-bold">Fichas</h2>
-            <div id="prof-list" class="mt-5 flex flex-col gap-3"></div>
+            <div class="mt-5 grid grid-cols-1 sm:grid-cols-3 gap-2">
+              <input type="search" id="prof-search" placeholder="Buscar ficha o cuenta" class="rounded-xl border border-black/10 bg-white px-3 py-2 text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/10" />
+              <select id="prof-category-filter" class="rounded-xl border border-black/10 bg-white px-3 py-2 text-sm">
+                <option value="">Todas las categorías</option>
+                <option value="psiquiatria">Psiquiatría</option>
+                <option value="psicologia">Psicología</option>
+                <option value="nutricion">Nutrición</option>
+                <option value="fisioterapia">Fisioterapia</option>
+              </select>
+              <select id="prof-active-filter" class="rounded-xl border border-black/10 bg-white px-3 py-2 text-sm">
+                <option value="">Todas</option>
+                <option value="active">Solo activas</option>
+                <option value="inactive">Solo inactivas</option>
+              </select>
+            </div>
+            <div id="prof-list" class="mt-4 flex flex-col gap-3"></div>
+            <div id="prof-pagination" class="mt-3"></div>
           </div>
         </div>
       </section>
@@ -211,7 +271,20 @@
           </div>
           <div class="lg:col-span-3 rounded-2xl bg-white border border-black/5 p-6">
             <h2 class="font-serif text-2xl font-bold">Catálogo de servicios</h2>
-            <div id="svc-list" class="mt-5 flex flex-col gap-3"></div>
+            <div class="mt-5 grid grid-cols-1 sm:grid-cols-2 gap-2">
+              <input type="search" id="svc-search" placeholder="Buscar servicio" class="rounded-xl border border-black/10 bg-white px-3 py-2 text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/10" />
+              <select id="svc-category-filter" class="rounded-xl border border-black/10 bg-white px-3 py-2 text-sm">
+                <option value="">Todas las categorías</option>
+                <option value="psiquiatria">Psiquiatría</option>
+                <option value="psicologia">Psicología</option>
+                <option value="terapias">Terapias Grupales</option>
+                <option value="nutricion">Nutrición</option>
+                <option value="fisioterapia">Terapia Física</option>
+                <option value="cursos">Cursos y Talleres</option>
+              </select>
+            </div>
+            <div id="svc-list" class="mt-4 flex flex-col gap-3"></div>
+            <div id="svc-pagination" class="mt-3"></div>
           </div>
         </div>
       </section>
@@ -236,6 +309,7 @@
           </div>
           <div id="appt-msg" class="hidden mb-4 text-xs text-center p-3 rounded-xl"></div>
           <div id="appt-list" class="flex flex-col gap-3"></div>
+          <div id="appt-pagination" class="mt-3"></div>
         </div>
       </section>
 
@@ -243,7 +317,15 @@
         <div class="rounded-2xl bg-white border border-black/5 p-6">
           <div class="flex items-start justify-between gap-4 flex-wrap mb-5">
             <h2 class="font-serif text-2xl font-bold">Usuarios</h2>
-            <input type="search" id="user-search" placeholder="Buscar por nombre o correo" class="rounded-xl border border-black/10 bg-white px-3 py-2 text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/10" />
+            <div class="flex gap-2 flex-wrap">
+              <input type="search" id="user-search" placeholder="Buscar por nombre o correo" class="rounded-xl border border-black/10 bg-white px-3 py-2 text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/10" />
+              <select id="user-role-filter" class="rounded-xl border border-black/10 bg-white px-3 py-2 text-sm">
+                <option value="">Todos los roles</option>
+                <option value="paciente">Pacientes</option>
+                <option value="profesional">Profesionales</option>
+                <option value="admin">Administradores</option>
+              </select>
+            </div>
           </div>
           <div id="user-msg" class="hidden mb-4 text-xs text-center p-3 rounded-xl"></div>
           <form id="user-form" class="mb-5 grid gap-3 md:grid-cols-2 rounded-2xl border border-black/5 bg-neutral-50 p-4">
@@ -264,6 +346,7 @@
             <button type="submit" class="md:col-span-2 rounded-full bg-primary px-5 py-2.5 text-sm font-semibold text-white hover:bg-primary-dark transition-colors">Crear usuario</button>
           </form>
           <div id="user-list" class="flex flex-col gap-3"></div>
+          <div id="user-pagination" class="mt-3"></div>
         </div>
       </section>
 
@@ -271,15 +354,19 @@
         <div class="rounded-2xl bg-white border border-black/5 p-6">
           <div class="flex items-start justify-between gap-4 flex-wrap mb-5">
             <h2 class="font-serif text-2xl font-bold">Mensajes de contacto</h2>
-            <select id="msg-status" class="rounded-xl border border-black/10 bg-white px-3 py-2 text-sm">
-              <option value="">Todos</option>
-              <option value="nuevo">Nuevos</option>
-              <option value="leido">Leídos</option>
-              <option value="respondido">Respondidos</option>
-            </select>
+            <div class="flex gap-2 flex-wrap">
+              <input type="search" id="msg-search" placeholder="Buscar mensaje" class="rounded-xl border border-black/10 bg-white px-3 py-2 text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/10" />
+              <select id="msg-status" class="rounded-xl border border-black/10 bg-white px-3 py-2 text-sm">
+                <option value="">Todos</option>
+                <option value="nuevo">Nuevos</option>
+                <option value="leido">Leídos</option>
+                <option value="respondido">Respondidos</option>
+              </select>
+            </div>
           </div>
           <div id="messages-msg" class="hidden mb-4 text-xs text-center p-3 rounded-xl"></div>
           <div id="messages-list" class="flex flex-col gap-3"></div>
+          <div id="messages-pagination" class="mt-3"></div>
         </div>
       </section>
 
@@ -287,18 +374,22 @@
         <div class="rounded-2xl bg-white border border-black/5 p-6">
           <h2 class="font-serif text-2xl font-bold">Comentarios</h2>
           <p class="mt-1 text-sm text-black/50">Modera las opiniones publicadas en los perfiles.</p>
+          <input type="search" id="comment-search" placeholder="Buscar por autor, profesional o texto" class="mt-4 w-full max-w-md rounded-xl border border-black/10 bg-white px-3 py-2 text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/10" />
           <div id="comments-msg" class="hidden mt-4 text-xs text-center p-3 rounded-xl"></div>
           <div id="comments-list" class="mt-5 flex flex-col gap-3"></div>
+          <div id="comments-pagination" class="mt-3"></div>
         </div>
       </section>
-    </div>
-  </main>
+      </div>
+    </main>
+  </div>
 
   <script src="js/supabase-config.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <script src="js/supabase-client.js"></script>
 <script src="js/realtime.js"></script>
 <script src="js/session.js"></script>
+<script src="js/ui-utils.js"></script>
 <script src="js/admin.js"></script>
 </body>
 </html>

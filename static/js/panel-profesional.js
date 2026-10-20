@@ -30,6 +30,10 @@
   let scheduleLoaded = false;
   let servicesLoaded = false;
   let assignedServiceIds = [];
+  let scheduleRows = [];
+  let agendaPage = 1;
+  let patientsPage = 1;
+  let schedulePage = 1;
 
   function escapeHtml(str) {
     return String(str || '').replace(/[&<>"']/g, function (m) {
@@ -109,18 +113,33 @@
   function setTab(name) {
     document.querySelectorAll('.pro-tab').forEach(function (btn) {
       const active = btn.dataset.tab === name;
-      btn.classList.toggle('border-primary', active);
+      btn.classList.toggle('bg-primary/10', active);
       btn.classList.toggle('text-primary', active);
-      btn.classList.toggle('border-transparent', !active);
-      btn.classList.toggle('text-black/40', !active);
+      btn.classList.toggle('font-semibold', active);
+      btn.classList.toggle('text-black/60', !active);
     });
     document.querySelectorAll('.pro-section').forEach(function (section) {
       section.classList.toggle('hidden', section.dataset.section !== name);
     });
 
+    if (window.innerWidth < 1024) {
+      const sidebar = document.getElementById('pro-sidebar');
+      const overlay = document.getElementById('pro-overlay');
+      if (sidebar) sidebar.classList.remove('open');
+      if (overlay) overlay.classList.add('hidden');
+    }
+
     if (name === 'horarios' && !scheduleLoaded) loadSchedule();
     if (name === 'perfil' && !servicesLoaded) loadServices();
   }
+
+  window.toggleProSidebar = function () {
+    const sidebar = document.getElementById('pro-sidebar');
+    const overlay = document.getElementById('pro-overlay');
+    if (!sidebar || !overlay) return;
+    const open = sidebar.classList.toggle('open');
+    overlay.classList.toggle('hidden', !open);
+  };
 
   document.querySelectorAll('.pro-tab').forEach(function (btn) {
     btn.addEventListener('click', function () { setTab(btn.dataset.tab); });
@@ -190,16 +209,31 @@
   }
 
   function filteredAppointments() {
+    const term = (document.getElementById('agenda-search').value || '').trim().toLowerCase();
     const list = appointments.filter(function (a) {
-      if (agendaFilter === 'todas') return true;
-      if (agendaFilter === 'pendientes') return ['pendiente', 'proxima'].indexOf(a.status) !== -1;
-      if (agendaFilter === 'historial') return !isUpcoming(a);
-      return isUpcoming(a);
+      if (agendaFilter !== 'todas') {
+        if (agendaFilter === 'pendientes' && ['pendiente', 'proxima'].indexOf(a.status) === -1) return false;
+        if (agendaFilter === 'historial' && isUpcoming(a)) return false;
+        if (agendaFilter === 'proximas' && !isUpcoming(a)) return false;
+      }
+      if (term) {
+        const p = patientsById[a.user_id] || {};
+        const haystack = [patientName(a.user_id), p.email || '', p.phone || '', a.service_label || '', a.notes || ''].join(' ').toLowerCase();
+        if (haystack.indexOf(term) === -1) return false;
+      }
+      return true;
     });
     const dir = agendaFilter === 'historial' || agendaFilter === 'todas' ? -1 : 1;
     return list.sort(function (a, b) {
       return dir * (a.date + ' ' + a.start_time).localeCompare(b.date + ' ' + b.start_time);
     });
+  }
+
+  function meetButton(a) {
+    if (a.modality !== 'virtual' || UPCOMING_STATUSES.indexOf(a.status) === -1) return '';
+    const url = window.SITE_CONFIG && window.SITE_CONFIG.meetingUrl;
+    if (!url) return '<span class="text-[11px] text-black/40">Enlace pendiente</span>';
+    return '<a href="' + escapeHtml(url) + '" target="_blank" rel="noopener" class="rounded-full bg-primary px-3 py-1.5 text-[11px] font-semibold text-white hover:bg-primary-dark transition-colors">Unirse</a>';
   }
 
   function actionButtons(a) {
@@ -216,14 +250,19 @@
 
   function renderAgenda() {
     const wrap = document.getElementById('agenda-list');
+    const pager = document.getElementById('agenda-pagination');
     const list = filteredAppointments();
 
     if (!list.length) {
       wrap.innerHTML = '<p class="rounded-xl border border-black/5 bg-neutral-50 p-6 text-center text-sm text-black/40">No hay citas en esta vista.</p>';
+      pager.innerHTML = '';
       return;
     }
 
-    wrap.innerHTML = list.map(function (a) {
+    const page = paginateItems(list, agendaPage, 8);
+    agendaPage = page.page;
+
+    wrap.innerHTML = page.items.map(function (a) {
       const meta = STATUS_META[a.status] || STATUS_META.proxima;
       const patient = patientsById[a.user_id] || {};
       const contact = [
@@ -245,14 +284,20 @@
           (contact ? '<p class="mt-1 text-xs text-black/40">' + contact + '</p>' : '') +
           (a.notes ? '<p class="mt-2 rounded-lg bg-white border border-black/5 px-2.5 py-1.5 text-xs text-black/50">' + escapeHtml(a.notes) + '</p>' : '') +
         '</div>' +
-        '<div class="flex flex-wrap gap-2 md:justify-end">' + actionButtons(a) + '</div>' +
+        '<div class="flex flex-wrap items-center gap-2 md:justify-end">' + meetButton(a) + actionButtons(a) + '</div>' +
       '</article>';
     }).join('');
+
+    renderPager(pager, page, function (nextPage) {
+      agendaPage = nextPage;
+      renderAgenda();
+    });
   }
 
   document.querySelectorAll('.agenda-filter').forEach(function (btn) {
     btn.addEventListener('click', function () {
       agendaFilter = btn.dataset.filter;
+      agendaPage = 1;
       document.querySelectorAll('.agenda-filter').forEach(function (b) {
         const active = b.dataset.filter === agendaFilter;
         b.classList.toggle('border-primary', active);
@@ -263,6 +308,11 @@
       });
       renderAgenda();
     });
+  });
+
+  document.getElementById('agenda-search').addEventListener('input', function () {
+    agendaPage = 1;
+    renderAgenda();
   });
 
   document.getElementById('agenda-list').addEventListener('click', async function (e) {
@@ -312,21 +362,33 @@
       if (isUpcoming(a) && (!item.next || a.date < item.next)) item.next = a.date;
     });
 
-    const list = [...map.values()].sort(function (a, b) {
+    const all = [...map.values()].sort(function (a, b) {
       return String(b.next || b.last || '').localeCompare(String(a.next || a.last || ''));
     });
 
-    document.getElementById('patients-summary').textContent = list.length
-      ? list.length + ' paciente' + (list.length === 1 ? '' : 's') + ' · ' + appointments.length + ' cita' + (appointments.length === 1 ? '' : 's') + ' registradas'
+    document.getElementById('patients-summary').textContent = all.length
+      ? all.length + ' paciente' + (all.length === 1 ? '' : 's') + ' · ' + appointments.length + ' cita' + (appointments.length === 1 ? '' : 's') + ' registradas'
       : 'Personas que han reservado contigo.';
 
+    const term = (document.getElementById('patients-search').value || '').trim().toLowerCase();
+    const list = all.filter(function (item) {
+      if (!term) return true;
+      const p = patientsById[item.id] || {};
+      return ([p.name, p.lastname, p.email, p.phone].filter(Boolean).join(' ')).toLowerCase().indexOf(term) !== -1;
+    });
+
     const wrap = document.getElementById('patients-list');
+    const pager = document.getElementById('patients-pagination');
     if (!list.length) {
-      wrap.innerHTML = '<p class="md:col-span-2 rounded-xl border border-black/5 bg-neutral-50 p-6 text-center text-sm text-black/40">Aún no tienes pacientes con citas.</p>';
+      wrap.innerHTML = '<p class="md:col-span-2 rounded-xl border border-black/5 bg-neutral-50 p-6 text-center text-sm text-black/40">' + (all.length ? 'No hay pacientes con esos filtros.' : 'Aún no tienes pacientes con citas.') + '</p>';
+      pager.innerHTML = '';
       return;
     }
 
-    wrap.innerHTML = list.map(function (item) {
+    const page = paginateItems(list, patientsPage, 6);
+    patientsPage = page.page;
+
+    wrap.innerHTML = page.items.map(function (item) {
       const p = patientsById[item.id] || {};
       const name = [p.name, p.lastname].filter(Boolean).join(' ') || 'Paciente';
       const contact = [
@@ -347,7 +409,17 @@
         '</div>' +
       '</div>';
     }).join('');
+
+    renderPager(pager, page, function (nextPage) {
+      patientsPage = nextPage;
+      renderPatients();
+    });
   }
+
+  document.getElementById('patients-search').addEventListener('input', function () {
+    patientsPage = 1;
+    renderPatients();
+  });
 
   // ========== HORARIOS ==========
   async function loadSchedule() {
@@ -362,17 +434,26 @@
 
     if (error) {
       wrap.innerHTML = '<p class="rounded-xl border border-red-100 bg-red-50 p-4 text-center text-sm text-red-600">No se pudieron cargar los horarios.</p>';
+      document.getElementById('schedule-pagination').innerHTML = '';
       return;
     }
 
-    const rows = data || [];
-    if (!rows.length) {
+    scheduleRows = data || [];
+    renderSchedule();
+  }
+
+  function renderSchedule() {
+    const wrap = document.getElementById('schedule-list');
+    const pager = document.getElementById('schedule-pagination');
+
+    if (!scheduleRows.length) {
       wrap.innerHTML = '<p class="rounded-xl border border-black/5 bg-neutral-50 p-6 text-center text-sm text-black/40">Aún no has publicado horarios.</p>';
+      pager.innerHTML = '';
       return;
     }
 
     const grouped = {};
-    rows.forEach(function (row) {
+    scheduleRows.forEach(function (row) {
       if (!grouped[row.day]) grouped[row.day] = [];
       grouped[row.day].push(row);
     });
@@ -380,7 +461,19 @@
     const days = DAY_ORDER.filter(day => grouped[day])
       .concat(Object.keys(grouped).filter(day => DAY_ORDER.indexOf(day) === -1));
 
-    wrap.innerHTML = days.map(function (day) {
+    const dayFilter = document.getElementById('schedule-day-filter').value;
+    const filteredDays = dayFilter ? days.filter(function (day) { return day === dayFilter; }) : days;
+
+    if (!filteredDays.length) {
+      wrap.innerHTML = '<p class="rounded-xl border border-black/5 bg-neutral-50 p-6 text-center text-sm text-black/40">No hay bloques para ese día.</p>';
+      pager.innerHTML = '';
+      return;
+    }
+
+    const page = paginateItems(filteredDays, schedulePage, 3);
+    schedulePage = page.page;
+
+    wrap.innerHTML = page.items.map(function (day) {
       const blocks = grouped[day].sort((a, b) => hhmm(a.start_time).localeCompare(hhmm(b.start_time)));
       return '<div>' +
         '<p class="text-xs font-semibold uppercase tracking-wider text-primary">' + day + '</p>' +
@@ -394,7 +487,17 @@
         '</div>' +
       '</div>';
     }).join('');
+
+    renderPager(pager, page, function (nextPage) {
+      schedulePage = nextPage;
+      renderSchedule();
+    });
   }
+
+  document.getElementById('schedule-day-filter').addEventListener('change', function () {
+    schedulePage = 1;
+    renderSchedule();
+  });
 
   document.getElementById('schedule-form').addEventListener('submit', async function (e) {
     e.preventDefault();

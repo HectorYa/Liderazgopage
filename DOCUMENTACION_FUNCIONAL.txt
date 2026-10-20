@@ -1,0 +1,794 @@
+================================================================================
+              EXCELENTEMENTE - DOCUMENTACION FUNCIONAL DEL APLICATIVO
+================================================================================
+Sitio:            https://excelentemente.org
+Repositorio:      Liderazgopage (rama main)
+Fecha del doc:    19/10/2026
+Version del doc:  1.1
+Alcance:          Estado real del sistema a la fecha. Describe que hace cada
+                  pagina, cada rol, cada boton y cada regla del backend.
+                  Incluye los paneles con sidebar, filtros y paginacion, el
+                  paso de pago simulado con QR y el enlace de reunion virtual.
+
+--------------------------------------------------------------------------------
+INDICE
+--------------------------------------------------------------------------------
+ 1. Que es el aplicativo
+ 2. Arquitectura tecnica
+ 3. Roles del sistema y matriz de permisos
+ 4. Acceso: registro, inicio de sesion y sesion
+ 5. Paginas publicas (detalle funcional)
+ 6. Rol PACIENTE: dashboard
+ 7. Rol PROFESIONAL: panel
+ 8. Rol ADMINISTRADOR: panel
+ 9. Flujos completos paso a paso
+10. Estados de una cita y reglas de cambio
+11. Base de datos (tablas y campos)
+12. Seguridad (RLS, triggers, Edge Function)
+13. Actualizacion en tiempo real (Realtime)
+14. Configuracion, despliegue y mantenimiento
+15. Limitaciones actuales y recomendaciones
+16. Glosario
+
+
+================================================================================
+1. QUE ES EL APLICATIVO
+================================================================================
+
+Excelentemente es el sitio web de un centro psicologico y psiquiatrico ubicado en
+Huancayo, Peru. Permite:
+
+  - Mostrar al publico el catalogo de servicios y el equipo de profesionales.
+  - Que un paciente se registre por su cuenta y reserve citas (presenciales o
+    virtuales) con un profesional.
+  - Que cada profesional gestione su agenda, sus pacientes, sus horarios y su
+    perfil publico.
+  - Que un administrador controle profesionales, servicios, citas, usuarios,
+    mensajes de contacto y comentarios.
+
+Es un sitio ESTATICO (HTML + JavaScript puro), sin framework y sin proceso de
+compilacion. Toda la logica de datos y de seguridad vive en Supabase
+(Postgres + Auth + RLS + API REST + Realtime).
+
+
+================================================================================
+2. ARQUITECTURA TECNICA
+================================================================================
+
+FRONT-END
+  - 14 paginas HTML en la carpeta static/.
+  - JavaScript vanilla en static/js/ (un archivo por funcionalidad).
+  - Tailwind CSS por CDN con configuracion inline en cada HTML.
+  - Supabase JS v2 por CDN crea el cliente global "window.sb".
+  - No hay backend propio, no hay Node, no hay build.
+
+BACKEND (Supabase, proyecto tqqnyrvxzsftwmxzkeph)
+  - Auth: registro, login, sesiones, contrasenas.
+  - Postgres: tablas del negocio.
+  - RLS: cada usuario solo puede leer/escribir lo que le corresponde.
+  - Realtime: avisa a las paginas cuando cambian las citas.
+  - Edge Function "create-user": crea y actualiza cuentas desde el panel admin.
+
+ARCHIVOS CLAVE DEL FRONT
+  static/js/supabase-config.js    URL y clave publica (anon) del proyecto.
+  static/js/supabase-client.js    Crea window.sb.
+  static/js/session.js            roleHome(), fetchRole(), requireSession().
+  static/js/auth-ui.js            Mensajes de error y redirecciones seguras.
+  static/js/realtime.js           Suscripcion a cambios de citas.
+  static/js/site-config.js        Enlace de reunion (Meet) y monto simulado.
+  static/js/ui-utils.js           paginateItems() y renderPager() compartidos.
+  static/js/dashboard.js          Panel del paciente.
+  static/js/panel-profesional.js  Panel del profesional (sidebar y filtros).
+  static/js/admin.js              Panel del administrador (sidebar y filtros).
+  static/js/agendar.js            Reserva de citas y paso de pago simulado.
+  static/js/perfil-profesional.js Perfil publico, comentarios y reserva.
+  static/js/profesionales.js      Catalogo con buscador y filtros.
+  static/js/servicios.js          Catalogo de servicios.
+  static/js/contacto.js           Formulario de contacto.
+
+IMPORTANTE: la clave "anon" es publica por diseno. La seguridad NO depende de
+ocultarla, sino de las politicas RLS del servidor. La clave "service_role" NUNCA
+se incluye en el navegador; solo existe dentro de la Edge Function.
+
+
+================================================================================
+3. ROLES DEL SISTEMA Y MATRIZ DE PERMISOS
+================================================================================
+
+Existen exactamente TRES roles, guardados en profiles.role:
+
+  PACIENTE      Persona atendida (cliente). Se registra por su cuenta.
+  PROFESIONAL   Psicologo/psiquiatra/etc. NO se registra solo: el administrador
+                le crea la cuenta y se la entrega.
+  ADMIN         Administrador. Gestiona todo el sistema. El primer admin se crea
+                manualmente en Supabase (ver seccion 14).
+
+MATRIZ DE PERMISOS
+  (+ = permitido, - = no permitido, "propio" = solo sus datos)
+
+  ACCION                                   PACIENTE   PROFESIONAL   ADMIN
+  ---------------------------------------  ---------  ------------  -----
+  Registrarse por su cuenta                   +            -          -
+  Iniciar sesion                              +            +          +
+  Ver catalogo publico                        +            +          +
+  Reservar una cita desde el sitio            +            -          -
+  Ver sus propias citas                       +            +          +
+  Ver todas las citas                         -            -          +
+  Cancelar una cita                           + (propias)  + (propias) +
+  Cambiar el estado de una cita               -            + (validos) +
+  Eliminar una cita                           -            -          +
+  Editar su perfil (nombre, telefono, etc.)   +            +          +
+  Editar ficha profesional                    -            + (propia)  +
+  Crear/eliminar fichas profesionales         -            -          +
+  Activar/desactivar una ficha                -            -          +
+  Gestionar horarios (bloques)                -            + (propios) +
+  Asignar servicios a un profesional          -            + (propios) +
+  Crear/editar/eliminar servicios             -            -          +
+  Crear cuentas de usuario                    -            -          +
+  Cambiar el rol de un usuario                -            -          +
+  Ver mensajes de contacto                    -            -          +
+  Moderar (eliminar) comentarios              -            -          +
+  Publicar comentarios/resenas                +            +          +
+  Ver la lista de sus pacientes               -            +          -
+
+REGLA CLAVE: nadie puede auto-ascenderse de rol. Aunque un usuario manipule el
+navegador, un trigger del servidor (guard_profile_role) impide que cambie su
+propio rol. Solo un admin (o el SQL Editor de Supabase) puede asignar roles.
+
+
+================================================================================
+4. ACCESO: REGISTRO, INICIO DE SESION Y SESION
+================================================================================
+
+4.1 REGISTRO DEL PACIENTE (registro.html)
+  - Formulario: nombre, apellido, correo, telefono, contrasena y confirmacion.
+  - Valida que las dos contrasenas coincidan.
+  - Crea la cuenta en Supabase Auth (sb.auth.signUp) enviando nombre, apellido y
+    telefono como metadatos.
+  - Un trigger del servidor (handle_new_user) crea automaticamente la fila en
+    profiles con rol "paciente".
+  - Si el proyecto tiene la confirmacion por correo ACTIVADA, el usuario debe
+    confirmar su correo antes de entrar y se le muestra un aviso.
+  - Si la confirmacion esta DESACTIVADA (estado actual), entra directo al
+    dashboard.
+  - Si el correo ya esta registrado, se muestra un mensaje claro.
+  - El correo debe ser real y con dominio valido: Supabase rechaza dominios de
+    prueba (por ejemplo test.com o example.com) con "email_address_invalid".
+
+4.2 INICIO DE SESION (login.html)
+  - Formulario: correo y contrasena.
+  - sb.auth.signInWithPassword valida contra Auth.
+  - Al entrar, se consulta el rol en profiles y se redirige:
+        admin       -> admin.html
+        profesional -> panel-profesional.html
+        paciente    -> dashboard.html
+  - Si el usuario ya tenia sesion abierta, login.html lo redirige de inmediato.
+  - Admite un parametro ?redirect=... solo si es una ruta interna segura.
+
+4.3 SESION Y PROTECCION DE PAGINAS
+  - Cada pagina privada ejecuta requireSession([roles permitidos]).
+  - Sin sesion: redirige a login.html.
+  - Con sesion pero rol no permitido: redirige a la pagina de su rol.
+  - Esto se valida tambien en el servidor mediante RLS, no solo en el front.
+
+4.4 CERRAR SESION
+  - Boton "Salir" en dashboard, panel-profesional y admin.
+  - Ejecuta sb.auth.signOut() y vuelve a index.html.
+
+4.5 CAMBIO DE CONTRASENA
+  - PACIENTE: puede cambiarla desde "Mi perfil" (campo nueva contrasena).
+  - PROFESIONAL: no tiene pantalla para cambiarla; el administrador se la
+    restablece desde el panel de Profesionales.
+  - No existe boton de "olvide mi contrasena" en el sitio (ver limitaciones).
+
+
+================================================================================
+5. PAGINAS PUBLICAS (DETALLE FUNCIONAL)
+================================================================================
+
+5.1 index.html (INICIO)
+  - Pagina de presentacion con hero animado (Vanta.js + Three.js).
+  - Enlaces a servicios, profesionales, nosotros, blogs, tests y agenda.
+  - No consume datos del backend.
+
+5.2 nosotros.html (QUIENES SOMOS)
+  - Contenido institucional estatico (mision, vision, equipo, etc.).
+
+5.3 servicios.html (CATALOGO DE SERVICIOS)
+  - Lee la tabla services desde Supabase.
+  - Agrupa los servicios por categoria: Psiquiatria, Psicologia, Terapias
+    Grupales, Nutricion, Terapia Fisica y Cursos y Talleres.
+  - Cada tarjeta muestra nombre, descripcion, icono, calificacion y numero de
+    resenas.
+  - El boton "Quiero saber mas" lleva a contacto.html con el servicio
+    preseleccionado (?servicio=Nombre).
+
+5.4 profesionales.html (EQUIPO)
+  - Lee la tabla professionals y muestra solo las fichas activas.
+  - Tarjetas con foto (o iniciales), nombre, cargo, especialidad y categoria.
+  - Buscador por nombre, cargo o especialidad.
+  - Filtros por categoria (todos, psiquiatria, psicologia, nutricion).
+  - Botones "Ver perfil" y "Reservar una cita".
+
+5.5 perfil-profesional.html (PERFIL PUBLICO)
+  - Requiere el parametro ?id=ID_DEL_PROFESIONAL; si no existe, vuelve al
+    listado.
+  - Solo muestra profesionales activos; si esta inactivo, vuelve al listado.
+  - Muestra: foto, nombre, cargo, grado, especialidad, biografia, etiquetas,
+    promedio de estrellas y cantidad de comentarios.
+  - Muestra los servicios asignados al profesional.
+  - Bloque "Reservar una cita":
+      * Modalidad: presencial o virtual.
+      * Dias disponibles segun sus horarios publicados.
+      * Horas disponibles segun sus bloques de horario.
+      * Los horarios ya ocupados aparecen tachados y deshabilitados.
+      * Boton "Reservar cita": si no hay sesion, manda a login; al terminar
+        muestra el mensaje de confirmacion y reactiva el boton.
+  - Comentarios:
+      * Cualquier visitante puede leerlos.
+      * Para comentar hay que iniciar sesion.
+      * Permite elegir de 1 a 5 estrellas y escribir un texto.
+      * El nombre del autor se toma del perfil.
+  - El parametro ?reservar=1 hace scroll automatico al bloque de reserva.
+
+5.6 blogs.html
+  - Pagina informativa estatica (articulos/noticias). No usa backend.
+
+5.7 tests.html
+  - Pagina informativa estatica con pruebas de tamizaje. No usa backend.
+  - Incluye un aviso de que no sustituyen una evaluacion profesional.
+
+5.8 contacto.html (FORMULARIO DE CONTACTO)
+  - Campos: nombre, correo, celular (opcional), servicio (opcional) y mensaje.
+  - Guarda el mensaje en la tabla contact_messages (estado inicial "nuevo").
+  - Si viene ?servicio=Nombre, lo preselecciona o lo escribe en el mensaje.
+  - Muestra confirmacion al enviar.
+  - No envia correo automatico: el mensaje se revisa en el panel admin.
+
+5.9 agendar.html (RESERVAR CITA)
+  - Se puede ver sin sesion, pero para confirmar hay que iniciar sesion.
+  - Pasos: elegir profesional, servicio, modalidad, dia y hora.
+  - Cambiar de profesional recarga sus servicios y horarios.
+  - Los horarios ocupados no se pueden seleccionar.
+  - Al confirmar:
+      * Si no hay sesion: redirige a login y luego vuelve.
+      * Si no eligio dia/hora: pide seleccionar.
+      * Si el horario se ocupo mientras tanto: avisa y refresca.
+      * Si todo va bien: guarda la cita con estado "proxima" y abre el paso
+        de pago.
+  - PASO DE PAGO (SIMULADO): muestra el resumen de la cita, el monto
+    configurado y un codigo QR de demostracion. El boton "Confirmar pago"
+    simula la operacion (no cobra ni verifica nada) y redirige al dashboard
+    con el aviso "Pago exitoso".
+  - IMPORTANTE: la cita se crea ANTES del paso de pago y queda registrada
+    aunque el usuario no pulse "Confirmar pago". No hay pasarela de pago ni
+    estado de pago en la base de datos.
+  - La cita aparece de inmediato en el dashboard del paciente.
+
+5.10 404.html
+  - Pagina de error para rutas inexistentes (configurada en Vercel).
+
+
+================================================================================
+6. ROL PACIENTE: DASHBOARD (dashboard.html)
+================================================================================
+
+Al entrar, el paciente ve un panel con cuatro secciones en el menu lateral.
+
+6.1 HISTORIAL
+  - Lista sus citas separadas en:
+      PROXIMAS: estados pendiente, proxima o confirmada con fecha futura.
+      PASADAS: canceladas, atendidas, no asistio o con fecha ya pasada.
+  - Cada cita muestra servicio, profesional, modalidad, fecha, hora y estado.
+  - En citas virtuales muestra el enlace "Unirse a la reunion" si
+    site-config.js tiene meetingUrl; si esta vacio, muestra "Enlace
+    pendiente".
+  - Boton "Cancelar" en las citas proximas (pide confirmacion).
+  - El paciente SOLO puede cancelar; no puede cambiar otros estados ni editar
+    los datos de la cita (lo impone el servidor).
+  - Si llega desde agendar.html con ?pago=exitoso, muestra un aviso verde de
+    "Pago exitoso" (el pago es simulado; no se guarda en la base de datos).
+  - Se actualiza en vivo si el profesional o el admin cambian la cita.
+
+6.2 SERVICIOS
+  - Muestra el catalogo de servicios con filtros por categoria.
+  - Boton "Agendar este servicio" que lleva a agendar.html.
+
+6.3 PROFESIONALES
+  - Muestra las fichas activas con botones "Ver perfil" y "Reservar".
+  - "Reservar" abre el perfil con el bloque de reserva visible.
+
+6.4 MI PERFIL
+  - Edita nombre, apellido, correo y telefono.
+  - Puede establecer una nueva contrasena.
+  - Nombre, apellido y correo son obligatorios.
+  - Si cambia el correo, Supabase puede pedir una confirmacion por correo.
+  - Al guardar, se actualizan los datos y el encabezado del panel.
+
+6.5 CERRAR SESION
+  - Boton "Salir".
+
+
+================================================================================
+7. ROL PROFESIONAL: PANEL (panel-profesional.html)
+================================================================================
+
+El profesional inicia sesion con la cuenta que le entrego el administrador.
+El panel busca su ficha en professionals por user_id = su usuario.
+Si su cuenta no tiene ficha vinculada, muestra un aviso de "cuenta sin ficha".
+Usa un menu lateral (sidebar) con cinco secciones: Resumen, Agenda, Pacientes,
+Horarios y Mi perfil. En pantallas pequenas el sidebar se abre con el boton de
+menu y se cierra tocando el fondo oscuro (overlay).
+
+7.1 RESUMEN
+  - Numero de citas proximas.
+  - Numero de citas atendidas.
+  - Numero de comentarios recibidos.
+  - Detalle de la proxima cita (fecha, hora, paciente, servicio y modalidad).
+
+7.2 AGENDA
+  - Lista todas sus citas (no las de otros profesionales).
+  - Filtros: Proximas (por defecto), Pendientes, Historial y Todas.
+  - Buscador por paciente, servicio o nota, y paginacion de resultados.
+  - Cada cita muestra fecha, hora, paciente, estado, servicio, modalidad,
+    telefono y correo del paciente, y notas si existen.
+  - En citas virtuales muestra "Unirse a la reunion" si site-config.js tiene
+    meetingUrl; si esta vacio, muestra "Enlace pendiente".
+  - Acciones disponibles sobre citas proximas:
+      CONFIRMAR   Pasa el estado a "confirmada".
+      ATENDIDA    Marca la cita como atendida.
+      NO ASISTIO  Marca que el paciente no llego (pide confirmacion).
+      CANCELAR    Cancela la cita (pide confirmacion).
+  - El profesional puede cambiar el estado entre los valores validos, pero no
+    puede alterar los datos de la cita (fecha, hora, paciente, servicio).
+  - Se actualiza en vivo cuando el paciente reserva o cancela.
+
+7.3 PACIENTES
+  - Agrupa automaticamente a las personas que han reservado con el profesional.
+  - Por cada paciente muestra: nombre, telefono, correo, total de citas, citas
+    atendidas, fecha de la ultima cita y fecha de la proxima.
+  - Buscador por nombre, correo o telefono, y paginacion de resultados.
+  - Solo puede ver pacientes que tengan citas con el (no toda la base).
+  - No puede editar datos del paciente.
+
+7.4 HORARIOS
+  - Lista sus bloques de horario agrupados por dia.
+  - Filtro por dia y paginacion de resultados.
+  - Agrega un bloque indicando dia, hora de inicio y hora de fin.
+  - Valida que la hora de fin sea mayor que la de inicio.
+  - No permite duplicar el mismo dia y hora de inicio.
+  - Puede eliminar un bloque (pide confirmacion).
+  - Estos bloques son exactamente los que ve el paciente al reservar.
+
+7.5 MI PERFIL
+  - Edita su ficha publica: nombre, cargo, grado, especialidad, biografia y URL
+    de foto.
+  - La categoria y el estado activo/inactivo NO los puede cambiar el
+    profesional; los controla el administrador.
+  - Si su ficha esta desactivada, ve un aviso de que no aparece en el catalogo.
+  - Enlace "Ver perfil publico".
+  - Servicios: marca/desmarca los servicios que ofrece. Esos servicios son los
+    que se muestran en su perfil y los que aparecen al reservar con el.
+  - Se actualiza en vivo su agenda.
+
+7.6 CERRAR SESION
+  - Boton "Salir".
+
+
+================================================================================
+8. ROL ADMINISTRADOR: PANEL (admin.html)
+================================================================================
+
+El admin ve un menu lateral (sidebar) con siete pestanas: Resumen,
+Profesionales, Servicios, Citas, Usuarios, Mensajes y Comentarios. En pantallas
+pequenas el sidebar se abre con el boton de menu y se cierra tocando el overlay.
+Los contadores del resumen se actualizan en vivo con las citas.
+
+8.1 RESUMEN
+  - Profesionales activos.
+  - Total de servicios.
+  - Citas proximas (pendiente, proxima o confirmada).
+  - Total de pacientes.
+
+8.2 PROFESIONALES
+  - Lista todas las fichas (activas e inactivas).
+  - Filtros: buscador por ficha o cuenta, categoria y estado (activas/inactivas).
+  - Paginacion de resultados.
+  - Muestra nombre, cargo, categoria, estado y cuenta vinculada (correo) o
+    "Sin cuenta vinculada".
+  - CREAR FICHA:
+      * Identificador (slug: minusculas, numeros y guiones).
+      * Nombre, cargo, categoria, grado, especialidad, biografia, URL de foto,
+        orden de aparicion y activo.
+      * "Cuenta de acceso": correo y contrasena.
+        - Boton "Sugerir correo desde el nombre" que genera
+          nombre.apellido@excelentemente.org.
+        - Al guardar se crea la cuenta en Auth ya confirmada y se vincula a la
+          ficha. El profesional podra iniciar sesion con ese correo y esa
+          contrasena.
+        - El correo no necesita ser un buzon real mientras no se use la
+          recuperacion de contrasena.
+  - EDITAR FICHA:
+      * Cambia cualquier dato de la ficha.
+      * Puede cambiar el correo y/o la contrasena de la cuenta vinculada
+        (dejar la contrasena vacia = conservar la actual).
+      * Puede vincular una cuenta existente mediante el selector.
+      * Al cambiar de cuenta, la cuenta anterior vuelve a rol "paciente".
+  - RESTABLECER CLAVE:
+      * Solo aparece si la ficha tiene cuenta.
+      * Pide la nueva contrasena y la aplica en Auth.
+      * La contrasena no se puede leer; solo fijar una nueva.
+  - ACTIVAR / DESACTIVAR:
+      * Una ficha inactiva no aparece en el catalogo ni se puede reservar.
+      * El profesional conserva su acceso al panel.
+  - ELIMINAR:
+      * Borra la ficha (no borra la cuenta de Auth).
+      * Si la ficha tiene citas asociadas, el sistema lo impide y sugiere
+        desactivarla.
+  - Los errores de duplicado (identificador o cuenta ya usados) se informan.
+
+8.3 SERVICIOS
+  - Lista todos los servicios.
+  - Buscador por nombre, filtro por categoria y paginacion.
+  - Crear y editar: categoria, nombre, icono, descripcion, detalle, calificacion
+    y numero de resenas.
+  - Nombre y descripcion son obligatorios.
+  - No permite dos servicios con el mismo nombre en la misma categoria.
+  - Eliminar servicio (pide confirmacion).
+
+8.4 CITAS
+  - Lista TODAS las citas del sistema, de la mas reciente a la mas antigua.
+  - Filtro por estado, buscador por nombre/correo del paciente o nombre del
+    profesional, y paginacion.
+  - Cambiar el estado con un selector (todos los estados).
+  - Eliminar una cita (pide confirmacion).
+  - Se actualiza en vivo cuando hay cambios.
+
+8.5 USUARIOS
+  - Lista todos los perfiles (pacientes, profesionales y admins).
+  - Buscador por nombre o correo, filtro por rol y paginacion.
+  - Cambiar el rol con un selector.
+      * No puede cambiarse el rol a si mismo (el selector aparece deshabilitado
+        en su propia fila).
+  - Crear usuario:
+      * Nombre, apellido, correo, telefono, contrasena y rol.
+      * Opcionalmente vincularlo a una ficha profesional libre.
+      * Se crea la cuenta ya confirmada mediante la Edge Function create-user.
+      * Permite crear pacientes, profesionales o administradores.
+
+8.6 MENSAJES
+  - Lista los mensajes enviados desde contacto.html.
+  - Filtro por estado: nuevo, leido, respondido; buscador y paginacion.
+  - Muestra nombre, correo, telefono, servicio de interes, texto y fecha.
+  - Cambiar el estado.
+  - Eliminar el mensaje (pide confirmacion).
+
+8.7 COMENTARIOS
+  - Lista todos los comentarios/resenas de todos los profesionales.
+  - Buscador por autor, profesional o texto, y paginacion.
+  - Muestra autor, estrellas, profesional, fecha y texto.
+  - Eliminar un comentario (pide confirmacion).
+
+8.8 CERRAR SESION
+  - Boton "Salir".
+
+
+================================================================================
+9. FLUJOS COMPLETOS PASO A PASO
+================================================================================
+
+9.1 ALTA DE UN PROFESIONAL (lo hace el ADMIN)
+  1) Entra como admin.
+  2) Pestana Profesionales -> llena la ficha.
+  3) Pulsa "Sugerir correo desde el nombre" (opcional).
+  4) Escribe la contrasena.
+  5) Guardar.
+  6) El sistema crea la cuenta en Auth (confirmada), la vincula a la ficha y le
+     asigna rol profesional.
+  7) El admin comunica al profesional su correo y contrasena.
+  8) El profesional entra a login.html y cae en su panel.
+
+9.2 REGISTRO DE UN PACIENTE
+  1) Entra a registro.html y completa sus datos.
+  2) Se crea la cuenta y su perfil con rol paciente.
+  3) Entra directamente al dashboard (si la confirmacion por correo esta
+     desactivada) o confirma el correo (si esta activada).
+
+9.3 RESERVA DE UNA CITA (3 caminos)
+  A) Desde profesionales.html -> "Reservar una cita" -> perfil -> reservar.
+  B) Desde el dashboard -> Profesionales -> Reservar.
+  C) Desde agendar.html eligiendo profesional manualmente.
+  En los tres casos:
+    - Se elige dia y hora de los bloques publicados.
+    - Se elige modalidad (presencial o virtual).
+    - Se confirma y la cita queda en estado "proxima".
+    - Se muestra el paso de pago simulado (resumen + QR). Al confirmar, el
+      sitio redirige al dashboard con el aviso "Pago exitoso". No se cobra ni
+      se guarda ningun pago.
+    - Aparece en el dashboard del paciente y en la agenda del profesional.
+    - Si es virtual y site-config.js tiene meetingUrl, el paciente y el
+      profesional ven el enlace "Unirse a la reunion".
+
+9.4 ATENCION DE UNA CITA
+  1) El profesional entra a su Agenda.
+  2) Confirma la cita (estado "confirmada").
+  3) Al terminar la sesion la marca "Atendida"; si el paciente no llego, la
+     marca "No asistio".
+  4) El paciente ve el estado actualizado en su historial.
+
+9.5 CANCELACION
+  - El paciente puede cancelar sus citas proximas desde el dashboard.
+  - El profesional puede cancelar desde su agenda.
+  - El admin puede cambiar el estado o eliminar la cita.
+  - Una cita cancelada libera el horario para otra reserva.
+
+9.6 COMENTARIO EN UN PERFIL
+  1) El visitante entra al perfil de un profesional.
+  2) Si no tiene sesion, el campo de comentario lo invita a iniciar sesion.
+  3) Elige estrellas (1 a 5) y escribe el comentario.
+  4) Se guarda y se recalcula el promedio mostrado.
+
+9.7 MENSAJE DE CONTACTO
+  1) El visitante llena contacto.html.
+  2) Se guarda en contact_messages con estado "nuevo".
+  3) El admin lo revisa en la pestana Mensajes y cambia el estado a leido o
+     respondido. La respuesta se hace por correo o telefono, fuera del sitio.
+
+
+================================================================================
+10. ESTADOS DE UNA CITA Y REGLAS DE CAMBIO
+================================================================================
+
+Estados permitidos:
+  pendiente   Cita registrada, aun sin confirmar por el profesional.
+  proxima     Cita futura (estado por defecto al reservar).
+  confirmada  El profesional confirmo la cita.
+  pasada      Cita cuya fecha ya paso.
+  atendida    El paciente asistio y fue atendido.
+  cancelada   Cita anulada (libera el horario).
+  no_asistio  El paciente no se presento.
+
+Que puede hacer cada rol (validado en el servidor):
+  PACIENTE    Solo puede cambiar el estado a "cancelada". No puede modificar
+              fecha, hora, profesional, servicio, modalidad ni notas.
+  PROFESIONAL Puede cambiar el estado a cualquier valor valido, pero no puede
+              modificar los datos de la cita.
+  ADMIN       Sin restricciones: puede cambiar el estado o eliminar la cita.
+  AL RESERVAR Si quien inserta no es admin, el estado se fuerza a "proxima".
+
+Regla de doble reserva:
+  No puede existir dos citas no canceladas para el mismo profesional, fecha y
+  hora de inicio. El sistema lo impide en la base de datos y la pagina lo avisa.
+
+
+================================================================================
+11. BASE DE DATOS (TABLAS Y CAMPOS)
+================================================================================
+
+11.1 profiles  (una fila por cuenta)
+  id          uuid, igual al usuario de Auth.
+  name        nombre.
+  lastname    apellido.
+  email       correo (espejo del de Auth).
+  phone       telefono (opcional).
+  role        paciente | profesional | admin.
+  created_at  fecha de creacion.
+
+11.2 professionals  (ficha publica del profesional)
+  id            slug de texto (por ejemplo "wilbert-barzola").
+  name          nombre completo.
+  role          cargo (Psicologo, Psiquiatra, etc.).
+  category      psiquiatria | psicologia | nutricion | fisioterapia.
+  degree        grado academico.
+  specialty     especialidad.
+  bio           biografia.
+  photo_url     URL de la foto (no se suben archivos).
+  active        visible o no en el catalogo.
+  display_order orden de aparicion.
+  user_id       cuenta de Auth vinculada (una cuenta por ficha).
+  created_at    fecha de creacion.
+
+11.3 schedule_blocks  (horarios del profesional)
+  id, professional_id, day, start_time, end_time.
+  Un bloque se repite todas las semanas en ese dia y horario.
+
+11.4 services  (catalogo)
+  id, category, name, icon, description, detail, rating, reviews.
+  Categorias: psiquiatria, psicologia, terapias, nutricion, fisioterapia,
+  cursos.
+
+11.5 professional_services  (que servicios ofrece cada profesional)
+  professional_id + service_id.
+
+11.6 appointments  (citas)
+  id, user_id (paciente), professional_id, service_label, modality,
+  date, start_time, end_time, status, notes, created_at.
+  modality: presencial | virtual.
+
+11.7 comments  (comentarios y resenas)
+  id, professional_id, user_id, author_name, stars (1-5), body, created_at.
+
+11.8 contact_messages  (mensajes del formulario)
+  id, name, email, phone, service, message, status, created_at.
+  status: nuevo | leido | respondido.
+
+NOTA: las contrasenas NO estan en ninguna de estas tablas. Viven hasheadas en
+auth.users, que es la tabla interna de Supabase Auth. Ni el admin puede leerlas;
+solo puede restablecerlas.
+
+
+================================================================================
+12. SEGURIDAD (RLS, TRIGGERS, EDGE FUNCTION)
+================================================================================
+
+12.1 RLS (Row Level Security)
+  Todas las tablas tienen RLS activado. Resumen:
+  - professionals: lectura publica solo de fichas activas; el admin gestiona
+    todo; el profesional lee/edita su propia ficha.
+  - schedule_blocks: lectura publica; el admin gestiona todo; el profesional
+    gestiona solo los suyos.
+  - services: lectura publica; solo el admin escribe.
+  - professional_services: lectura publica; el admin gestiona todo; el
+    profesional gestiona los suyos.
+  - profiles: cada usuario lee/edita el suyo; el admin lee/edita todos; el
+    profesional puede leer los datos de sus pacientes (los que tienen citas
+    con el).
+  - appointments: el paciente ve y crea solo las suyas; el profesional ve y
+    actualiza las suyas; el admin ve y gestiona todas.
+  - comments: lectura publica; un usuario autenticado crea con su propio
+    user_id; puede editar/borrar los suyos; el admin modera todos.
+  - contact_messages: cualquiera puede insertar; solo el admin lee/gestiona.
+
+12.2 TRIGGERS
+  handle_new_user         Crea la fila en profiles al registrarse.
+  guard_profile_role      Impide que un usuario cambie su propio rol.
+  guard_professional_link Impide que un profesional se vincule a otra ficha.
+  guard_appointments      Aplica las reglas de la seccion 10.
+
+12.3 EDGE FUNCTION create-user
+  - Vive en el servidor (Deno) y usa la service_role.
+  - Solo responde a peticiones POST de un usuario autenticado cuyo rol sea
+    admin.
+  - action "create": crea la cuenta ya confirmada, guarda el perfil con su rol
+    y opcionalmente vincula la ficha.
+  - action "update": cambia correo y/o contrasena de una cuenta existente y
+    sincroniza profiles.
+  - El navegador nunca ve la service_role.
+  - Si la funcion no esta desplegada, el panel muestra un error al crear o
+    actualizar cuentas.
+
+12.4 QUE NO SE GUARDA EN EL FRONT
+  - No hay contrasenas ni service_role en el codigo del navegador.
+  - No se usa localStorage para datos del negocio; todo pasa por Supabase.
+
+
+================================================================================
+13. ACTUALIZACION EN TIEMPO REAL (REALTIME)
+================================================================================
+
+La tabla appointments esta publicada en Realtime. Esto permite que, sin recargar:
+  - El dashboard del paciente refresque su historial si el profesional cambia
+    el estado o el admin lo modifica.
+  - El panel del profesional refresque su agenda cuando un paciente reserva o
+    cancela.
+  - El panel del admin actualice contadores y la lista de citas.
+  - La pagina agendar refresque los horarios ocupados si alguien reserva el
+    mismo bloque.
+Cada sesion recibe solo los cambios que RLS le permite leer.
+Si Realtime no esta configurado, las paginas siguen funcionando (solo no se
+actualizan solas).
+
+
+================================================================================
+14. CONFIGURACION, DESPLIEGUE Y MANTENIMIENTO
+================================================================================
+
+14.1 CREAR EL PRIMER ADMINISTRADOR (una sola vez)
+  1) Supabase Dashboard -> Authentication -> Users -> Add user.
+  2) Registrar el correo y contrasena y marcar "Auto Confirm User".
+  3) En SQL Editor:
+        update public.profiles set role = 'admin' where email = 'CORREO_DEL_ADMIN';
+  4) Entrar a login.html: caera en admin.html.
+  Los siguientes admins ya se pueden crear desde el panel (Usuarios).
+
+14.2 DESPLIEGUE DEL SITIO
+  - El repositorio esta conectado a Vercel.
+  - Publicar = git push a la rama main.
+  - La "Root Directory" del proyecto en Vercel debe apuntar a static/.
+  - No hay build.
+
+14.3 DESPLIEGUE DE LA EDGE FUNCTION
+  - No se despliega con git push.
+  - Ejecutar:
+        supabase functions deploy create-user --project-ref tqqnyrvxzsftwmxzkeph
+    o pegar el contenido en el editor de Edge Functions del dashboard.
+
+14.4 MIGRACIONES SQL
+  Deben aplicarse una vez, en orden, en el SQL Editor:
+    schema.sql             Esquema base.
+    002_roles_portal.sql   Roles, vinculos y RLS por rol.
+    003_portal_profesional.sql  Permisos del profesional sobre sus servicios.
+    004_contacto.sql       Mensajes de contacto.
+    005_realtime.sql       Realtime para citas.
+    006_hardening.sql      Reglas de cambio de estado de citas.
+
+14.5 CONFIGURACION DE AUTH RECOMENDADA
+  - Authentication -> URL Configuration:
+      Site URL: https://excelentemente.org (o el dominio real de Vercel).
+      Redirect URLs: el dominio real y http://localhost:8000/** para pruebas.
+  - Si se desactiva "Confirm email", los pacientes entran directo (sin correo
+    de confirmacion y sin limite de envios).
+  - Si se activa, hace falta un SMTP propio; el remitente integrado de Supabase
+    tiene un limite muy bajo de correos por hora.
+
+14.6 CONFIGURACION DEL SITIO (static/js/site-config.js)
+  - meetingUrl: enlace de la reunion virtual (por ejemplo, Google Meet).
+    Mientras este vacio (''), las citas virtuales muestran "Enlace pendiente".
+    Un solo enlace se usa para todas las citas virtuales; no se genera uno por
+    cita.
+  - paymentAmount: monto que aparece en el resumen del pago simulado
+    (por defecto "S/ 50.00").
+  - paymentLabel: etiqueta del pago (por defecto "Pago simulado").
+  - Este archivo es publico y se carga en agendar.html, dashboard.html y
+    panel-profesional.html. No colocar secretos en el.
+
+
+================================================================================
+15. LIMITACIONES ACTUALES Y RECOMENDACIONES
+================================================================================
+
+1) No existe "olvide mi contrasena". El paciente puede cambiar la suya si
+   recuerda la actual; el profesional depende del admin. Recomendacion:
+   agregar el flujo de recuperacion por correo cuando haya SMTP propio.
+
+2) No se suben imagenes: la foto del profesional es una URL externa.
+
+3) No hay pagos en linea reales. Existe un paso de pago SIMULADO con QR de
+   demostracion: no cobra, no verifica y no guarda estado de pago. La cita se
+   crea antes de ese paso. Tampoco hay confirmacion automatica por
+   WhatsApp/correo. Recomendacion: integrar una pasarela (Culqi, Mercado Pago,
+   etc.) y registrar el estado del pago antes de confirmar la cita.
+
+4) No hay notificaciones automaticas de citas; el contacto es manual.
+
+5) blogs.html y tests.html son estaticos (no se administran desde el panel).
+
+6) Los servicios que ofrece cada profesional deben asignarse (panel del
+   profesional -> Mi perfil -> Servicios o panel admin). Si un profesional no
+   tiene servicios asignados, al reservar se muestran todos los servicios como
+   respaldo.
+
+7) El correo de una cuenta creada por el admin no necesita ser real para
+   iniciar sesion, pero si se usara recuperacion de contrasena, deberia serlo.
+
+8) La confirmacion por correo debe decidirse: activa (mas seguro, requiere
+   SMTP) o desactivada (entrada inmediata, sin verificacion de correo).
+
+9) El enlace de reunion virtual es uno solo para todo el sitio
+   (site-config.js -> meetingUrl). No hay enlaces por cita ni generacion
+   automatica de salas de Meet.
+
+
+================================================================================
+16. GLOSARIO
+================================================================================
+
+Auth          Servicio de Supabase que gestiona cuentas y contrasenas.
+RLS           Row Level Security: reglas del servidor que limitan que filas
+              puede leer o escribir cada usuario.
+Anon key      Clave publica del proyecto; se usa en el navegador.
+Service role  Clave privada total; solo vive en el servidor (Edge Function).
+Perfil        Fila de profiles: datos de la cuenta y su rol.
+Ficha         Fila de professionals: informacion publica del profesional.
+Slot          Bloque de horario reservable (dia + hora).
+Edge Function Funcion del servidor ejecutada en Supabase.
+Realtime      Canal en vivo que avisa cambios de la base de datos.
+Pago simulado Paso de demostracion con resumen y QR; no cobra ni verifica.
+Meet          Enlace de videollamada configurado en site-config.js.
+Paciente      Cliente que recibe la atencion.
+Profesional   Especialista que atiende las citas.
+Admin         Administrador del sistema.
+
+================================================================================
+FIN DEL DOCUMENTO
+================================================================================

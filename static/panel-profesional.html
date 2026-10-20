@@ -23,63 +23,97 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <script>tailwind.config={theme:{extend:{fontFamily:{sans:['Geist','sans-serif'],serif:['Fraunces','serif']},colors:{primary:{DEFAULT:'#1a7a6d',light:'#2aa394',dark:'#145e54'},accent:{DEFAULT:'#e8a838'}}}}}</script>
   <link rel="stylesheet" href="css/styles.css" />
+  <style>
+    @media (max-width: 1023px) {
+      .pro-sidebar { position: fixed; top: 64px; bottom: 0; left: 0; z-index: 50; transform: translateX(-100%); transition: transform .3s; overflow-y: auto; }
+      .pro-sidebar.open { transform: translateX(0); }
+    }
+  </style>
 </head>
 <body class="font-sans antialiased bg-neutral-50 min-h-screen">
-  <header class="bg-white border-b border-black/5">
-    <div class="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between gap-4">
-      <div class="flex items-center gap-3 min-w-0">
+  <header class="sticky top-0 z-40 bg-white/90 backdrop-blur-md border-b border-black/5">
+    <div class="mx-auto flex h-16 max-w-7xl items-center justify-between gap-4 px-4 lg:px-6">
+      <div class="flex min-w-0 items-center gap-3">
+        <button type="button" onclick="toggleProSidebar()" class="lg:hidden size-9 rounded-lg border border-black/10 flex items-center justify-center text-black/50 hover:bg-black/5" aria-label="Abrir menú">
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+        </button>
         <a href="index.html" class="font-serif text-xl font-bold text-primary shrink-0">Excelentemente</a>
-        <span class="rounded-full bg-accent/20 px-3 py-1 text-[10px] font-semibold uppercase tracking-wider text-amber-700">Profesional</span>
+        <span class="hidden sm:inline-flex rounded-full bg-accent/20 px-3 py-1 text-[10px] font-semibold uppercase tracking-wider text-amber-700">Profesional</span>
       </div>
       <div class="flex items-center gap-3">
         <span id="pro-name-header" class="hidden sm:block text-sm text-black/60 truncate max-w-[220px]"></span>
         <div id="pro-avatar" class="size-9 rounded-full bg-accent text-white flex items-center justify-center text-xs font-bold shrink-0 overflow-hidden"><span></span></div>
-        <button type="button" onclick="logout()" class="rounded-full border border-black/10 px-4 py-2 text-xs font-semibold text-black/60 hover:border-red-200 hover:text-red-500 transition-colors">Cerrar sesión</button>
+        <button type="button" onclick="logout()" class="rounded-full border border-black/10 px-3 sm:px-4 py-2 text-xs font-semibold text-black/60 hover:border-red-200 hover:text-red-500 transition-colors"><span class="hidden sm:inline">Cerrar sesión</span><span class="sm:hidden">Salir</span></button>
       </div>
     </div>
   </header>
 
-  <main class="max-w-6xl mx-auto px-6 py-10">
-    <div id="pro-loading" class="text-sm text-black/40">Cargando tu panel...</div>
+  <div class="flex min-h-[calc(100vh-64px)]">
+    <aside id="pro-sidebar" class="pro-sidebar w-64 shrink-0 bg-white border-r border-black/5 p-4 lg:p-6 flex flex-col gap-1 lg:sticky lg:top-16 lg:h-[calc(100vh-64px)]">
+      <p class="text-[10px] uppercase tracking-[0.2em] text-black/30 font-medium mb-3 px-3">Mi consulta</p>
+      <button type="button" data-tab="resumen" class="pro-tab flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm text-black/60 hover:bg-primary/5 hover:text-primary transition-all text-left">
+        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+        Resumen
+      </button>
+      <button type="button" data-tab="agenda" class="pro-tab flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm text-black/60 hover:bg-primary/5 hover:text-primary transition-all text-left">
+        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+        Agenda
+      </button>
+      <button type="button" data-tab="pacientes" class="pro-tab flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm text-black/60 hover:bg-primary/5 hover:text-primary transition-all text-left">
+        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        Pacientes
+      </button>
+      <button type="button" data-tab="horarios" class="pro-tab flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm text-black/60 hover:bg-primary/5 hover:text-primary transition-all text-left">
+        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        Horarios
+      </button>
+      <button type="button" data-tab="perfil" class="pro-tab flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm text-black/60 hover:bg-primary/5 hover:text-primary transition-all text-left">
+        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        Mi perfil
+      </button>
+      <div class="mt-auto pt-4 border-t border-black/5">
+        <a href="index.html" class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm text-black/40 hover:bg-black/5 hover:text-black/60 transition-all">
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>
+          Volver al sitio
+        </a>
+      </div>
+    </aside>
 
-    <div id="pro-unlinked" class="hidden rounded-2xl bg-white border border-amber-200 p-6">
-      <h1 class="font-serif text-2xl font-bold">Cuenta sin ficha vinculada</h1>
-      <p class="mt-2 text-sm text-black/60 leading-relaxed">Tu cuenta tiene el rol de profesional, pero aún no está asociada a una ficha del catálogo. Pide al administrador que vincule tu cuenta desde el panel de administración.</p>
-      <a href="index.html" class="mt-5 inline-block rounded-full border border-primary/30 px-4 py-2 text-xs font-semibold text-primary hover:bg-primary/5 transition-colors">Volver al inicio</a>
-    </div>
+    <div id="pro-overlay" class="fixed inset-0 top-16 z-40 hidden bg-black/30 lg:hidden" onclick="toggleProSidebar()"></div>
 
-    <div id="pro-content" class="hidden">
-      <div class="mb-8 flex items-start justify-between gap-4 flex-wrap">
-        <div>
-          <p class="text-xs uppercase tracking-[0.18em] text-primary font-medium">Panel profesional</p>
-          <h1 id="pro-title" class="mt-2 font-serif text-3xl md:text-4xl font-bold tracking-tight"></h1>
-          <p id="pro-subtitle" class="mt-2 text-sm text-black/50"></p>
-        </div>
-        <a id="public-profile-link" href="profesionales.html" class="rounded-full border border-primary/30 px-4 py-2 text-xs font-semibold text-primary hover:bg-primary/5 transition-colors">Ver mi perfil público</a>
+    <main class="min-w-0 flex-1 p-4 lg:p-8">
+      <div id="pro-loading" class="text-sm text-black/40">Cargando tu panel...</div>
+
+      <div id="pro-unlinked" class="hidden rounded-2xl bg-white border border-amber-200 p-6">
+        <h1 class="font-serif text-2xl font-bold">Cuenta sin ficha vinculada</h1>
+        <p class="mt-2 text-sm text-black/60 leading-relaxed">Tu cuenta tiene el rol de profesional, pero aún no está asociada a una ficha del catálogo. Pide al administrador que vincule tu cuenta desde el panel de administración.</p>
+        <a href="index.html" class="mt-5 inline-block rounded-full border border-primary/30 px-4 py-2 text-xs font-semibold text-primary hover:bg-primary/5 transition-colors">Volver al inicio</a>
       </div>
 
-      <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
-        <div class="rounded-2xl bg-white border border-black/5 p-5">
-          <p class="text-xs text-black/40">Próximas citas</p>
-          <p id="stat-upcoming" class="mt-2 text-3xl font-semibold text-primary">—</p>
+      <div id="pro-content" class="hidden">
+        <div class="mb-8 flex items-start justify-between gap-4 flex-wrap">
+          <div>
+            <p class="text-xs uppercase tracking-[0.18em] text-primary font-medium">Panel profesional</p>
+            <h1 id="pro-title" class="mt-2 font-serif text-3xl md:text-4xl font-bold tracking-tight"></h1>
+            <p id="pro-subtitle" class="mt-2 text-sm text-black/50"></p>
+          </div>
+          <a id="public-profile-link" href="profesionales.html" class="rounded-full border border-primary/30 px-4 py-2 text-xs font-semibold text-primary hover:bg-primary/5 transition-colors">Ver mi perfil público</a>
         </div>
-        <div class="rounded-2xl bg-white border border-black/5 p-5">
-          <p class="text-xs text-black/40">Citas atendidas</p>
-          <p id="stat-attended" class="mt-2 text-3xl font-semibold text-primary">—</p>
-        </div>
-        <div class="rounded-2xl bg-white border border-black/5 p-5">
-          <p class="text-xs text-black/40">Comentarios recibidos</p>
-          <p id="stat-comments" class="mt-2 text-3xl font-semibold text-primary">—</p>
-        </div>
-      </div>
 
-      <nav class="flex gap-1 overflow-x-auto border-b border-black/5 mb-6" aria-label="Secciones del panel">
-        <button type="button" data-tab="resumen" class="pro-tab shrink-0 px-4 py-3 text-sm font-semibold border-b-2 border-transparent text-black/40 hover:text-primary transition-colors">Resumen</button>
-        <button type="button" data-tab="agenda" class="pro-tab shrink-0 px-4 py-3 text-sm font-semibold border-b-2 border-transparent text-black/40 hover:text-primary transition-colors">Agenda</button>
-        <button type="button" data-tab="pacientes" class="pro-tab shrink-0 px-4 py-3 text-sm font-semibold border-b-2 border-transparent text-black/40 hover:text-primary transition-colors">Pacientes</button>
-        <button type="button" data-tab="horarios" class="pro-tab shrink-0 px-4 py-3 text-sm font-semibold border-b-2 border-transparent text-black/40 hover:text-primary transition-colors">Horarios</button>
-        <button type="button" data-tab="perfil" class="pro-tab shrink-0 px-4 py-3 text-sm font-semibold border-b-2 border-transparent text-black/40 hover:text-primary transition-colors">Mi perfil</button>
-      </nav>
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
+          <div class="rounded-2xl bg-white border border-black/5 p-5">
+            <p class="text-xs text-black/40">Próximas citas</p>
+            <p id="stat-upcoming" class="mt-2 text-3xl font-semibold text-primary">—</p>
+          </div>
+          <div class="rounded-2xl bg-white border border-black/5 p-5">
+            <p class="text-xs text-black/40">Citas atendidas</p>
+            <p id="stat-attended" class="mt-2 text-3xl font-semibold text-primary">—</p>
+          </div>
+          <div class="rounded-2xl bg-white border border-black/5 p-5">
+            <p class="text-xs text-black/40">Comentarios recibidos</p>
+            <p id="stat-comments" class="mt-2 text-3xl font-semibold text-primary">—</p>
+          </div>
+        </div>
 
       <section class="pro-section" data-section="resumen">
         <div class="rounded-2xl bg-white border border-primary/10 p-5 mb-6">
@@ -116,8 +150,12 @@
               <button type="button" data-filter="todas" class="agenda-filter rounded-full border border-black/10 px-3 py-1.5 text-xs font-semibold text-black/50 hover:border-primary/40 transition-colors">Todas</button>
             </div>
           </div>
+          <div class="mb-4">
+            <input type="search" id="agenda-search" placeholder="Buscar paciente, servicio o nota" class="w-full max-w-md rounded-xl border border-black/10 bg-white px-3 py-2 text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/10" />
+          </div>
           <div id="agenda-msg" class="hidden mb-4 text-xs text-center p-3 rounded-xl"></div>
           <div id="agenda-list" class="flex flex-col gap-3"></div>
+          <div id="agenda-pagination" class="mt-3"></div>
         </div>
       </section>
 
@@ -125,7 +163,9 @@
         <div class="rounded-2xl bg-white border border-black/5 p-6">
           <h2 class="font-serif text-2xl font-bold">Pacientes</h2>
           <p id="patients-summary" class="mt-1 text-sm text-black/50">Personas que han reservado contigo.</p>
+          <input type="search" id="patients-search" placeholder="Buscar por nombre, correo o teléfono" class="mt-4 w-full max-w-md rounded-xl border border-black/10 bg-white px-3 py-2 text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/10" />
           <div id="patients-list" class="mt-5 grid grid-cols-1 md:grid-cols-2 gap-4"></div>
+          <div id="patients-pagination" class="mt-3 md:col-span-2"></div>
         </div>
       </section>
 
@@ -161,7 +201,18 @@
           <div class="lg:col-span-3 rounded-2xl bg-white border border-black/5 p-6">
             <h2 class="font-serif text-2xl font-bold">Horarios publicados</h2>
             <p class="mt-1 text-xs text-black/40">Eliminar un bloque no cancela citas ya reservadas.</p>
+            <select id="schedule-day-filter" class="mt-4 w-full max-w-xs rounded-xl border border-black/10 bg-white px-3 py-2 text-sm">
+              <option value="">Todos los días</option>
+              <option value="Lunes">Lunes</option>
+              <option value="Martes">Martes</option>
+              <option value="Miércoles">Miércoles</option>
+              <option value="Jueves">Jueves</option>
+              <option value="Viernes">Viernes</option>
+              <option value="Sábado">Sábado</option>
+              <option value="Domingo">Domingo</option>
+            </select>
             <div id="schedule-list" class="mt-5 flex flex-col gap-4"></div>
+            <div id="schedule-pagination" class="mt-3"></div>
           </div>
         </div>
       </section>
@@ -212,14 +263,17 @@
           </div>
         </div>
       </section>
-    </div>
-  </main>
+      </div>
+    </main>
+  </div>
 
   <script src="js/supabase-config.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <script src="js/supabase-client.js"></script>
 <script src="js/realtime.js"></script>
 <script src="js/session.js"></script>
+<script src="js/site-config.js"></script>
+<script src="js/ui-utils.js"></script>
 <script src="js/panel-profesional.js"></script>
 </body>
 </html>

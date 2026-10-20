@@ -202,7 +202,9 @@
     btn.disabled = true;
     btn.textContent = 'Reservando...';
 
-    const { error } = await sb.from('appointments').insert({
+    const profSelect = document.getElementById('agenda-prof');
+    const profName = profSelect && profSelect.selectedIndex >= 0 ? profSelect.options[profSelect.selectedIndex].textContent : '';
+    const { data: created, error } = await sb.from('appointments').insert({
       user_id: sessionUser.id,
       professional_id: profId,
       service_label: serviceName || null,
@@ -211,10 +213,10 @@
       start_time: selectedTime.inicio,
       end_time: selectedTime.fin,
       status: 'proxima'
-    });
+    }).select('id').single();
 
     btn.disabled = false;
-    btn.textContent = 'Confirmar cita';
+    btn.textContent = 'Continuar al pago';
 
     if (error) {
       if (error.code === '23505') {
@@ -228,9 +230,82 @@
     }
 
     taken.add(date + '|' + selectedTime.inicio);
-    showMsg('¡Cita reservada! ' + formatDate(date) + ' de ' + selectedTime.inicio + ' a ' + selectedTime.fin + ' (' + (modality === 'virtual' ? 'Virtual' : 'Presencial') + '). Puedes verla en tu panel.', true);
-    selectedTime = null;
-    selectDay(selectedDay);
+    showPaymentStep({
+      id: created ? created.id : '',
+      professional: profName,
+      service: serviceName || 'Consulta',
+      date: date,
+      start: selectedTime.inicio,
+      end: selectedTime.fin,
+      modality: modality
+    });
+  });
+
+  function showPaymentStep(appt) {
+    const config = window.SITE_CONFIG || {};
+    const amount = config.paymentAmount || 'S/ 50.00';
+    const modalityLabel = appt.modality === 'virtual' ? 'Virtual' : 'Presencial';
+
+    document.getElementById('payment-summary').innerHTML =
+      '<div class="flex items-start justify-between gap-3"><span class="text-black/50">Profesional</span><span class="font-semibold text-right">' + escapeHtml(appt.professional) + '</span></div>' +
+      '<div class="mt-2 flex items-start justify-between gap-3"><span class="text-black/50">Servicio</span><span class="font-semibold text-right">' + escapeHtml(appt.service) + '</span></div>' +
+      '<div class="mt-2 flex items-start justify-between gap-3"><span class="text-black/50">Fecha y hora</span><span class="font-semibold text-right">' + escapeHtml(formatDate(appt.date)) + '<br>' + escapeHtml(appt.start) + ' - ' + escapeHtml(appt.end) + '</span></div>' +
+      '<div class="mt-2 flex items-start justify-between gap-3"><span class="text-black/50">Modalidad</span><span class="font-semibold text-right">' + modalityLabel + '</span></div>' +
+      '<div class="mt-3 flex items-start justify-between gap-3 border-t border-black/5 pt-3"><span class="text-black/50">Monto (simulado)</span><span class="font-semibold text-primary">' + escapeHtml(amount) + '</span></div>';
+
+    renderQr('PAGO SIMULADO - ' + (appt.id || 'cita') + ' - ' + appt.date + ' ' + appt.start);
+    document.getElementById('agenda-content').classList.add('hidden');
+    document.getElementById('payment-step').classList.remove('hidden');
+    document.getElementById('payment-step').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
+  function qrFallback(text) {
+    let cells = '';
+    for (let i = 0; i < 144; i++) {
+      const on = ((i * 13 + String(text).length * 7) % 5) < 2;
+      cells += '<span class="' + (on ? 'bg-primary' : 'bg-white') + '"></span>';
+    }
+    return '<div class="grid size-44 grid-cols-12 gap-0.5 rounded-lg bg-white p-1">' + cells + '</div>' +
+      '<p class="mt-2 text-center text-[10px] text-black/40">QR de demostración</p>';
+  }
+
+  function renderQr(text) {
+    const holder = document.getElementById('payment-qr');
+    holder.innerHTML = '';
+
+    if (typeof window.QRCode === 'function') {
+      try {
+        new window.QRCode(holder, {
+          text: text,
+          width: 180,
+          height: 180,
+          colorDark: '#145e54',
+          colorLight: '#ffffff',
+          correctLevel: window.QRCode.CorrectLevel ? window.QRCode.CorrectLevel.M : 0
+        });
+        return;
+      } catch (err) {
+        holder.innerHTML = qrFallback(text);
+        return;
+      }
+    }
+
+    holder.innerHTML = qrFallback(text);
+  }
+
+  document.getElementById('payment-confirm').addEventListener('click', function () {
+    const btn = this;
+    if (btn.disabled) return;
+    btn.disabled = true;
+    btn.textContent = 'Procesando...';
+
+    setTimeout(function () {
+      document.getElementById('payment-success').classList.remove('hidden');
+      btn.classList.add('hidden');
+      setTimeout(function () {
+        window.location.href = 'dashboard.html?pago=exitoso';
+      }, 1200);
+    }, 600);
   });
 
   (async function init() {
