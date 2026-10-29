@@ -1,0 +1,852 @@
+================================================================================
+ EXCELENTEMENTE - NUEVOS REQUERIMIENTOS Y CORRECCIONES
+================================================================================
+Base de comparación: Documentación funcional v1.0 (19/10/2026)
+Objetivo: convertir el sistema actual de reservas en una plataforma de
+telepsicología con pago simulado, videollamada, notificaciones y estadísticas,
+y corregir los errores e inconsistencias detectados.
+
+Leyenda:
+  [NUEVO]     = no existe hoy, hay que construirlo
+  [CORREGIR]  = existe pero tiene un error o riesgo
+  [VERIFICAR] = no se pudo confirmar con la documentación; revisar en el
+                código o en los SQL antes de decidir
+  Prioridad: P1 = crítico, P2 = importante, P3 = mejora
+
+--------------------------------------------------------------------------------
+ÍNDICE
+--------------------------------------------------------------------------------
+  PARTE A. NUEVOS REQUERIMIENTOS
+    A1. Pago simulado
+    A2. Videollamada (Meet) y botón "Unirse"
+    A3. Política de cancelación y no asistencia
+    A4. Reprogramación de citas
+    A5. Correos y recuperación de contraseña
+    A6. Reseñas ligadas a citas
+    A7. Dashboard de estadísticas y ranking
+    A8. Contenido de la página y categorías administrables
+    A9. Gestión de agenda: bloqueos y reserva manual
+    A10. Gestión de usuarios: suspensión y protección de admins
+    A11. Aspectos éticos y legales
+    A12. Auditoría y configuración
+  PARTE B. ERRORES Y RIESGOS A CORREGIR
+  PARTE C. INCONSISTENCIAS DE LA DOCUMENTACIÓN
+  PARTE D. CAMBIOS EN LA BASE DE DATOS
+  PARTE E. NUEVAS EDGE FUNCTIONS Y PROCESOS AUTOMÁTICOS
+  PARTE F. CAMBIOS POR ROL (PACIENTE / PROFESIONAL / ADMIN)
+  PARTE G. PLAN DE TRABAJO POR FASES
+  PARTE H. DECISIONES PENDIENTES
+
+
+================================================================================
+PARTE A. NUEVOS REQUERIMIENTOS
+================================================================================
+
+--------------------------------------------------------------------------------
+A1. PAGO SIMULADO                                                  [NUEVO] P1
+--------------------------------------------------------------------------------
+Objetivo: que toda cita requiera un pago anticipado, aunque por ahora sea
+simulado, para dejar listo el flujo y reemplazarlo luego por una pasarela real.
+
+Flujo paso a paso:
+  1. El paciente elige profesional, servicio, modalidad, día y hora.
+  2. Se crea la cita en estado "pendiente_pago" con un vencimiento de 10
+     minutos (campo expira_pago_at). El horario queda reservado temporalmente.
+  3. Se muestra el resumen: profesional, servicio, fecha, hora, precio y la
+     política de cancelación.
+  4. El paciente marca una casilla "Acepto la política de cancelación".
+  5. Pulsa el botón "Realizar pago".
+  6. La función simulate-payment crea el registro en payments con estado
+     "pagado" y metodo "simulado".
+  7. La cita pasa a "confirmada".
+  8. Se genera el enlace de Meet (ver A2) y se envían los correos (ver A5).
+  9. Se muestra la pantalla de confirmación.
+
+Reglas:
+  - Si pasan 10 minutos sin pagar, un proceso automático pasa la cita a
+    "expirada" y libera el horario.
+  - Sin pago no hay cita confirmada.
+  - Máximo 2 citas pendientes de pago por paciente a la vez (evita acaparar
+    horarios).
+  - El botón se deshabilita al primer clic (evita doble pago).
+  - La pantalla debe indicar claramente "Pago simulado" mientras no haya
+    pasarela real.
+  - Cuando se integre la pasarela real, solo cambia el interior de la función.
+
+Datos nuevos:
+  - Precio en la ficha del profesional o del servicio (hoy no existe precio).
+  - Tabla payments (ver Parte D).
+
+--------------------------------------------------------------------------------
+A2. VIDEOLLAMADA (MEET) Y BOTÓN "UNIRSE"                          [NUEVO] P1
+--------------------------------------------------------------------------------
+Problema actual: existe la modalidad "virtual", pero la cita no tiene ningún
+enlace ni sala donde realizarse.
+
+Requerimiento:
+  - Campo meeting_url en appointments.
+  - Para citas virtuales confirmadas, el sistema genera o asigna un enlace.
+  - Dos opciones (decidir una, ver Parte H):
+      Opción A: Google Calendar API crea un evento con Meet por cada cita
+                (enlace único, más privado, requiere OAuth o cuenta de
+                servicio de Google).
+      Opción B: cada profesional registra su enlace fijo de Meet en su perfil
+                y se usa en todas sus citas (simple, menos privado).
+  - Citas presenciales: no llevan enlace; se muestra la dirección de la sede.
+
+Flujo del botón "Unirse":
+  1. Paciente y profesional ven su cita en el panel.
+  2. El enlace NO se muestra hasta 10 minutos antes del inicio.
+  3. Desde 10 minutos antes hasta 15 minutos después del fin, el botón
+     "Unirse" aparece activo y abre el enlace en otra pestaña.
+  4. Fuera de esa ventana el botón está deshabilitado con un texto
+     explicativo ("Se habilita 10 minutos antes").
+  5. Al pulsar "Unirse", se registra la hora de ingreso (cliente_ingreso_at o
+     psicologo_ingreso_at). Sirve como evidencia para marcar "no asistió".
+  6. La validación de la ventana horaria se hace en el SERVIDOR (función
+     join-meeting), no en el navegador.
+
+Seguridad:
+  - Solo el paciente y el profesional de esa cita pueden obtener el enlace.
+  - Si el enlace se guarda en appointments, restringir la lectura por RLS o
+    devolverlo solo desde join-meeting.
+
+--------------------------------------------------------------------------------
+A3. POLÍTICA DE CANCELACIÓN Y NO ASISTENCIA                      [NUEVO] P1
+--------------------------------------------------------------------------------
+Hoy el paciente puede cancelar a cualquier hora, sin ninguna regla económica.
+
+Reglas propuestas (editables desde configuración, ver A12):
+  - Cancelación con 24 horas o más de anticipación: reembolso 100%.
+  - Cancelación con menos de 24 horas: reembolso 50%.
+  - Paciente no se presenta: se retiene el 50% y se devuelve el 50%.
+  - Cancela el profesional o el admin: reembolso 100% siempre.
+  - Profesional no se presenta: estado "no_asistio_profesional", reembolso
+    100%.
+  - Por ahora el reembolso es solo un registro en la base de datos.
+
+Flujo de cancelación del paciente:
+  1. Pulsa "Cancelar" en su cita.
+  2. El sistema calcula y muestra cuánto se le reembolsará.
+  3. El paciente confirma.
+  4. La función cancel-appointment actualiza la cita a "cancelada", ajusta el
+     pago (reembolsado o retenido_parcial) y libera el horario.
+  5. Se envía correo al paciente y al profesional.
+
+Flujo de "no asistió":
+  1. Pasan 15 minutos del inicio sin ingreso del paciente.
+  2. El profesional pulsa "No asistió" (confirmación obligatoria).
+  3. La función mark-no-show valida que ya haya pasado la hora y aplica el 50%.
+  4. Se envía correo al paciente informando el cobro.
+
+Importante: hoy la cancelación se hace con un cambio directo de estado desde el
+navegador. Debe pasar por una función del servidor (cancel-appointment) para
+poder aplicar estas reglas.
+
+--------------------------------------------------------------------------------
+A4. REPROGRAMACIÓN DE CITAS                                    [NUEVO] P2
+--------------------------------------------------------------------------------
+  - El paciente puede reprogramar una vez, hasta 24 horas antes, sin costo.
+  - Elige un nuevo horario disponible del mismo profesional.
+  - Se conserva el pago original.
+  - Si usas enlace de Meet único, se actualiza el evento.
+  - Se envía correo a ambos.
+  - El profesional puede solicitar reprogramación; el paciente acepta o
+    rechaza (opcional).
+  - Campo reprogramaciones_count para controlar el límite.
+
+--------------------------------------------------------------------------------
+A5. CORREOS Y RECUPERACIÓN DE CONTRASEÑA                      [NUEVO] P1
+--------------------------------------------------------------------------------
+Hoy no hay ninguna notificación; el contacto es manual.
+
+Requisitos previos:
+  - Configurar SMTP propio en Supabase (Resend, SendGrid, Brevo u otro). El
+    remitente integrado tiene un límite muy bajo.
+  - Activar la verificación de correo en el registro.
+
+Correos a enviar:
+  Evento                                         Destinatario
+  ---------------------------------------------  ----------------------------
+  Verificación de cuenta                         Paciente
+  Bienvenida                                     Paciente
+  Recuperación de contraseña                     Todos
+  Invitación para crear contraseña               Profesional (creado por admin)
+  Cita confirmada (con enlace o dirección)       Paciente y profesional
+  Recordatorio 24 horas antes                    Paciente y profesional
+  Recordatorio 1 hora antes                      Paciente y profesional
+  Cita cancelada                                 Paciente y profesional
+  Cita reprogramada                              Paciente y profesional
+  No asistencia y cobro del 50%                  Paciente
+  Pedido de reseña tras la sesión                Paciente
+  Respuesta a mensaje de contacto (opcional)     Visitante
+
+Recuperar contraseña (paso a paso):
+  1. En login.html agregar el enlace "¿Olvidaste tu contraseña?".
+  2. El usuario escribe su correo.
+  3. Supabase envía un enlace temporal.
+  4. El usuario entra a una página nueva (restablecer.html) y define su nueva
+     contraseña.
+  5. Mensaje genérico, sin revelar si el correo existe.
+
+Invitación a profesionales (cambio de modelo):
+  - En lugar de que el admin elija y entregue una contraseña, el admin crea la
+    cuenta y el profesional recibe un correo para definir su propia contraseña.
+  - El correo del profesional debe ser real.
+
+--------------------------------------------------------------------------------
+A6. RESEÑAS LIGADAS A CITAS                                    [NUEVO] P2
+--------------------------------------------------------------------------------
+Hoy cualquier usuario autenticado puede comentar en cualquier perfil.
+
+Nuevo comportamiento:
+  - Solo puede reseñar un paciente con una cita "atendida" con ese profesional.
+  - Una reseña por cita (appointment_id único en comments).
+  - El profesional no puede reseñar su propio perfil.
+  - El nombre del autor se toma del servidor (perfil), no del navegador.
+  - El admin puede ocultar una reseña (campo visible) en vez de borrarla.
+  - El promedio se recalcula con un trigger.
+  - El campo "rating" y "reviews" de los servicios deja de ser manual: se
+    calcula desde reseñas reales o se elimina de la vista.
+  - Correo automático pidiendo la reseña unas horas después de la cita.
+
+--------------------------------------------------------------------------------
+A7. DASHBOARD DE ESTADÍSTICAS Y RANKING                        [NUEVO] P2
+--------------------------------------------------------------------------------
+Hoy el resumen del admin tiene solo 4 contadores.
+
+Tarjetas:
+  - Pacientes nuevos en el periodo (día, semana, mes).
+  - Profesionales activos.
+  - Citas por estado (confirmadas, atendidas, canceladas, no asistió).
+  - Ingresos del periodo e ingresos retenidos por no asistencia.
+  - Tasa de cancelación y de no asistencia.
+
+Gráficos:
+  - Pacientes nuevos por mes.
+  - Citas por semana.
+  - Citas por categoría y por servicio.
+  - Horas del día con más reservas.
+
+Ranking de profesionales:
+  - Por calificación promedio.
+  - Por citas atendidas.
+  - Por pacientes únicos atendidos.
+  - Por ingresos generados.
+  - Por pacientes recurrentes (más de una cita).
+
+Filtros: rango de fechas, profesional, categoría, modalidad.
+Implementación: vistas SQL (ver Parte D) consultadas desde admin.js.
+Exportación a CSV: [P3].
+
+Para el profesional (mini-dashboard propio):
+  - Citas del mes por estado, ingresos estimados, calificación y comentarios.
+
+--------------------------------------------------------------------------------
+A8. CONTENIDO DE LA PÁGINA Y CATEGORÍAS ADMINISTRABLES          [NUEVO] P2
+--------------------------------------------------------------------------------
+Hoy las categorías están fijas en el código y los textos de la página
+(inicio, nosotros, blogs, tests) son estáticos.
+
+Requerimiento:
+  - Tabla categories (nombre, descripción, imagen, orden, activa).
+  - Tabla site_content (sección, título, descripción, última modificación).
+  - Nueva pestaña "Contenido" en el panel admin para editar:
+      * Textos del inicio (hero, "cómo funciona", preguntas frecuentes).
+      * Descripción de cada categoría.
+      * Textos de nosotros, datos de contacto, dirección de la sede, pie de
+        página.
+  - Las páginas leen estos textos desde Supabase.
+  - Los blogs pasan a una tabla posts editable [P3].
+  - Los tests pasan a una tabla (con sus preguntas y rangos) [P3].
+
+--------------------------------------------------------------------------------
+A9. GESTIÓN DE AGENDA: BLOQUEOS Y RESERVA MANUAL                [NUEVO] P2
+--------------------------------------------------------------------------------
+Bloqueos puntuales:
+  - Tabla schedule_exceptions (profesional, inicio, fin, motivo).
+  - El profesional bloquea un día o rango (vacaciones, permiso, emergencia).
+  - Si hay citas confirmadas en ese rango, el sistema avisa y ofrece
+    reprogramarlas o cancelarlas con reembolso total.
+  - Los horarios bloqueados no aparecen al paciente.
+
+Configuración de bloques:
+  - Duración de sesión por servicio o por profesional.
+  - Descanso entre sesiones.
+  - Anticipación mínima (por ejemplo 2 horas) y máxima (por ejemplo 30 días)
+    para reservar.
+  - Dejar claro cómo un bloque (por ejemplo 09:00-13:00) se divide en citas.
+
+Reserva manual:
+  - El admin y el profesional pueden registrar una cita en nombre de un
+    paciente (llamada, WhatsApp o seguimiento).
+  - Seleccionan un paciente existente o crean uno nuevo.
+  - La cita puede marcarse como pagada fuera del sistema.
+
+Citas sucesivas:
+  - Botón "Reservar siguiente sesión" para el profesional al cerrar una cita.
+
+--------------------------------------------------------------------------------
+A10. GESTIÓN DE USUARIOS: SUSPENSIÓN Y PROTECCIÓN              [NUEVO] P2
+--------------------------------------------------------------------------------
+  - Campo active en profiles; el admin puede suspender o reactivar cuentas.
+  - Un usuario suspendido no puede iniciar sesión ni reservar.
+  - Impedir que el sistema se quede sin administradores (no permitir degradar
+    o eliminar al último admin).
+  - Al eliminar una ficha profesional, definir qué pasa con su cuenta (volver
+    a paciente o desactivarla).
+  - Al cambiar el rol de un usuario con ficha vinculada, desvincular o
+    bloquear el cambio.
+  - Al desactivar un profesional: avisar de citas futuras y ofrecer
+    cancelarlas con reembolso total o reasignarlas.
+
+--------------------------------------------------------------------------------
+A11. ASPECTOS ÉTICOS Y LEGALES                                  [NUEVO] P1
+--------------------------------------------------------------------------------
+Al tratarse de salud mental, es importante antes de operar con pacientes reales:
+  - Aviso visible: "Este servicio no atiende emergencias". Incluir teléfonos de
+    ayuda en crisis de Perú (línea de salud mental y emergencias) en el pie de
+    página, en el dashboard del paciente y en la confirmación de la cita.
+  - Casilla obligatoria al registrarse: aceptación de términos y política de
+    privacidad.
+  - Consentimiento informado de telepsicología (qué es, límites,
+    confidencialidad, qué hacer en una crisis).
+  - Confirmación de mayoría de edad. Si se atenderá a menores, definir otro
+    flujo con consentimiento del tutor.
+  - Páginas: términos y condiciones, política de privacidad, política de
+    cancelación y reembolso.
+  - Cumplimiento de la Ley 29733 de Protección de Datos Personales: los datos
+    de salud son datos sensibles. Revisarlo con un asesor legal. Definir
+    tiempo de conservación y cómo se elimina una cuenta.
+  - Verificar la licencia o colegiatura de cada profesional antes de
+    publicarlo (campo licencia y licencia_verificada).
+  - Guardar fecha y versión de los términos aceptados por cada usuario.
+
+--------------------------------------------------------------------------------
+A12. AUDITORÍA Y CONFIGURACIÓN                                  [NUEVO] P3
+--------------------------------------------------------------------------------
+Configuración (tabla settings, editable desde el panel admin):
+  - Minutos antes para habilitar "Unirse" (10).
+  - Minutos después del fin en que sigue habilitado (15).
+  - Horas límite para cancelación con reembolso completo (24).
+  - Porcentaje retenido por no asistencia (50).
+  - Minutos para pagar una cita pendiente (10).
+  - Máximo de citas pendientes por paciente (2).
+  - Anticipación mínima y máxima de reserva.
+
+Auditoría (tabla audit_log):
+  - Quién creó, editó o desactivó un profesional.
+  - Quién cambió un rol o suspendió un usuario.
+  - Quién canceló o eliminó una cita.
+  - Quién cambió un precio.
+  - Accesos del admin a datos de pacientes.
+  - Campos: usuario, acción, tabla, registro, valor anterior, valor nuevo,
+    fecha.
+
+
+================================================================================
+PARTE B. ERRORES Y RIESGOS A CORREGIR
+================================================================================
+
+--- CRÍTICOS (P1) --------------------------------------------------------------
+
+B1. Reserva validada solo en el navegador                  [CORREGIR/VERIFICAR]
+  Problema: según la documentación, el servidor solo fuerza el estado a
+  "proxima". Un usuario podría insertar citas directamente contra la API.
+  Verificar si el servidor valida:
+    - fecha no pasada,
+    - horario dentro de schedule_blocks,
+    - profesional activo,
+    - end_time correcto,
+    - modalidad válida,
+    - servicio ofrecido por ese profesional.
+  Solución: crear la función book-appointment (o triggers equivalentes) y
+  quitar el permiso de INSERT directo sobre appointments para pacientes.
+
+B2. Cancelación sin condiciones                            [CORREGIR/VERIFICAR]
+  Problema: el paciente puede poner "cancelada" sin límites.
+  Verificar si el servidor impide cancelar citas ya "atendida", "no_asistio" o
+  con fecha pasada. Eso permitiría alterar el historial.
+  Solución: la cancelación pasa por cancel-appointment, que valida estado,
+  fecha y aplica la política de A3.
+
+B3. Estados sin máquina de transiciones                             [CORREGIR]
+  Problema: el profesional puede cambiar a cualquier estado en cualquier
+  dirección (por ejemplo marcar "atendida" una cita futura, o pasar
+  "atendida" a "cancelada").
+  Solución: definir transiciones válidas (ver Parte C, tabla de estados) y
+  validarlas en un trigger o función. Reglas:
+    - "atendida" y "no_asistio" solo después de la hora de inicio.
+    - Los estados finales (atendida, no_asistio, cancelada, expirada) no
+      pueden cambiar, salvo el admin con registro en auditoría.
+
+B4. Doble reserva incompleta                                        [CORREGIR]
+  Problema: la restricción única cubre profesional + fecha + hora de inicio.
+  No evita:
+    - solapamientos con distinta hora de inicio (09:00 de 60 min y 09:30),
+    - que un mismo paciente tenga dos citas a la misma hora con profesionales
+      distintos.
+  Solución: restricción de exclusión por rango de tiempo (EXCLUDE USING gist
+  sobre professional_id y el rango inicio-fin, para estados activos) y otra
+  equivalente por paciente.
+
+B5. Reservas sin pago ni límite                                     [CORREGIR]
+  Problema: un paciente puede ocupar todos los horarios de un profesional sin
+  compromiso.
+  Solución: A1 (pago simulado, expiración a 10 minutos, máximo 2 pendientes).
+
+B6. Privacidad de los horarios ocupados                    [CORREGIR/VERIFICAR]
+  Problema: el paciente solo puede leer sus propias citas por RLS, pero
+  agendar.html muestra como ocupados los horarios de otros. Hay dos
+  posibilidades:
+    - Si appointments se puede leer públicamente: fuga de datos de pacientes.
+    - Si hay una vista o función: falta documentarla.
+  Solución: crear una función get-available-slots o una vista que devuelva
+  SOLO profesional, fecha y hora ocupada, sin datos del paciente. El front
+  usa solo esa fuente.
+
+B7. Posible XSS almacenado                                         [VERIFICAR]
+  Problema: en JavaScript puro con innerHTML, los textos de usuarios (mensajes
+  de contacto, comentarios, biografías, notas) se muestran en el panel del
+  admin. Un mensaje malicioso podría ejecutar código con la sesión del
+  administrador.
+  Solución: revisar todos los innerHTML y usar textContent o una función que
+  escape el HTML. Añadir cabecera Content-Security-Policy en Vercel.
+
+--- IMPORTANTES (P2) -----------------------------------------------------------
+
+B8. Registro sin verificación de correo                             [CORREGIR]
+  Problema: con la confirmación desactivada, cualquiera crea cuentas con
+  correos falsos; abre la puerta al spam y no permite enviar recordatorios.
+  Solución: activar la verificación con SMTP propio (A5).
+
+B9. Cuentas de profesionales con contraseña entregada por el admin  [CORREGIR]
+  Problema: el admin conoce la contraseña, el profesional no puede cambiarla
+  y no hay cambio obligatorio en el primer ingreso.
+  Solución: invitación por correo (A5) y pantalla de cambio de contraseña
+  también para el profesional.
+
+B10. Cambio de contraseña sin pedir la actual                       [CORREGIR]
+  Problema: una sesión abierta en un equipo ajeno basta para tomar la cuenta.
+  Solución: pedir la contraseña actual (o reautenticar) antes de cambiarla.
+
+B11. Formulario de contacto sin protección                          [CORREGIR]
+  Problema: cualquiera puede insertar mensajes sin límite ni captcha.
+  Solución: captcha (Cloudflare Turnstile o hCaptcha), límite por IP o
+  validación de longitud en el servidor, y campo trampa (honeypot).
+
+B12. Comentarios sin control                              [CORREGIR/VERIFICAR]
+  Problemas:
+    - Sin límite de uno por paciente por profesional.
+    - Un profesional puede comentar su propio perfil.
+    - Verificar si author_name lo fija el servidor; si lo envía el navegador,
+      se puede suplantar a otra persona.
+  Solución: A6.
+
+B13. Calificaciones de servicios escritas a mano                    [CORREGIR]
+  Problema: rating y reviews en services los edita el admin; no reflejan
+  opiniones reales y pueden engañar al visitante.
+  Solución: calcularlas desde reseñas reales o retirarlas de la vista.
+
+B14. Servicio guardado como texto en la cita                        [CORREGIR]
+  Problema: service_label es texto, sin integridad y sin poder sacar
+  estadísticas por servicio ni validar que el profesional lo ofrece.
+  Solución: agregar service_id (referencia a services) y mantener
+  service_label solo como respaldo histórico.
+
+B15. Roles y fichas desincronizados                                 [CORREGIR]
+  Problemas:
+    - Al eliminar una ficha no se elimina la cuenta: queda un usuario con rol
+      profesional sin ficha.
+    - Si el admin cambia el rol a "paciente" desde Usuarios, la ficha puede
+      quedar vinculada a un paciente.
+    - Desactivar un profesional no gestiona sus citas futuras y conserva su
+      acceso.
+  Solución: ver A10; trigger que mantenga coherencia entre profiles.role y
+  professionals.user_id.
+
+B16. Borrado físico de citas                                        [CORREGIR]
+  Problema: el admin elimina citas y se pierde el historial (y el rastro de
+  pagos).
+  Solución: borrado lógico (campo deleted_at) y registro en auditoría.
+
+B17. Citas vencidas sin cerrar                                      [CORREGIR]
+  Problema: "pasada" no la asigna nadie; se deduce por fecha. Una cita
+  confirmada que nadie cierra queda como "confirmada" para siempre.
+  Solución: proceso automático que detecte citas cuyo horario terminó sin
+  cierre y avise al profesional (recordatorio por correo y alerta en el panel
+  "Citas por cerrar").
+
+B18. Privacidad de los datos del paciente                           [CORREGIR]
+  Problema: el profesional lee el perfil completo de pacientes con citas
+  (incluso canceladas) sin límite de tiempo; el admin ve todo sin dejar
+  rastro.
+  Solución: limitar las columnas visibles (nombre, teléfono, correo), restringir
+  el acceso a pacientes con citas confirmadas o atendidas y registrar accesos
+  sensibles del admin (A12).
+
+B19. Edge Function create-user con posibles cuentas huérfanas        [CORREGIR]
+  Problema: si falla la creación del perfil después de crear el usuario en
+  Auth, queda una cuenta sin perfil.
+  Solución: revertir (borrar el usuario de Auth) ante cualquier error
+  posterior, o ejecutar todo en una transacción. Agregar la función al flujo
+  de despliegue (CI) para que el código y lo desplegado no se desfasen.
+
+--- MENORES (P3) ---------------------------------------------------------------
+
+B20. Zona horaria calculada en el navegador. "Próxima" y "pasada" se decide
+     con la hora del dispositivo; un equipo mal configurado muestra mal las
+     citas. Solución: calcular en el servidor o usar una zona fija
+     (America/Lima) y guardar fechas con zona.
+B21. Migraciones SQL manuales y sin entorno de pruebas. Solución: usar
+     Supabase CLI con migraciones versionadas y un proyecto de pruebas.
+B22. Sin dirección de la sede en citas presenciales. Solución: mostrarla en la
+     confirmación y en los correos.
+B23. La foto del profesional es solo una URL externa; si se rompe, desaparece.
+     Solución: Supabase Storage (solo para la foto) con tamaño limitado.
+B24. Un admin podría degradar a otro admin hasta quedarse sin ninguno.
+     Solución: A10.
+B25. El correo sugerido (nombre.apellido@excelentemente.org) puede no existir
+     como buzón. Solución: pedir correo real o crear los buzones.
+B26. Foto de contacto y teléfono visibles en la ficha sin consentimiento del
+     profesional. Solución: definir qué datos son públicos.
+B27. Citas con modalidad "presencial" y "virtual" comparten los mismos
+     horarios. Solución: permitir bloques por modalidad.
+
+
+================================================================================
+PARTE C. INCONSISTENCIAS DE LA DOCUMENTACIÓN
+================================================================================
+
+C1. Realtime y RLS (sección 13)
+  Dice que agendar.html refresca los horarios cuando otro usuario reserva, pero
+  también que cada sesión solo recibe los cambios que RLS le permite leer. El
+  paciente no puede leer las citas de otros, así que ambas afirmaciones no
+  pueden ser ciertas a la vez.
+  Corrección: documentar la fuente real de los horarios ocupados (vista o
+  función, ver B6) y suscribir Realtime a esa fuente, o aclarar que agendar no
+  se actualiza en vivo.
+
+C2. Cambio de contraseña (secciones 4.5 y 15)
+  La 4.5 dice que el paciente escribe solo la nueva contraseña; la 15 dice que
+  puede cambiarla "si recuerda la actual". Corrección: decidir (se recomienda
+  pedir la actual, B10) y dejar una sola versión.
+
+C3. Matriz de permisos (sección 3)
+  La matriz dice que el paciente no puede "cambiar el estado de una cita", pero
+  el texto indica que puede cancelar. Corrección: aclarar que cancelar es la
+  única excepción permitida al paciente.
+
+C4. Correo sugerido para profesionales (secciones 8.2 y 15.7)
+  Sugiere un correo con dominio propio que parece un buzón real, pero se aclara
+  que puede no existir. Corrección: indicar claramente si es un buzón o solo un
+  identificador, y exigir correo real si se usan invitaciones (A5).
+
+C5. Estados "proxima", "pendiente" y "pasada" (secciones 5.9, 7.2 y 10)
+  - Al reservar queda "proxima", pero el filtro del profesional se llama
+    "Pendientes".
+  - "pendiente" se describe como "aún sin confirmar", igual que "proxima".
+  - "pasada" no es un estado que alguien asigne; se deduce por fecha.
+  Corrección: unificar el conjunto de estados (tabla siguiente).
+
+  ESTADOS PROPUESTOS
+  Estado                  Significado                          Quién lo asigna
+  ----------------------  -----------------------------------  ---------------
+  pendiente_pago          Reservada, esperando pago            Sistema
+  confirmada              Pagada, tiene enlace/dirección       Sistema (pago)
+  atendida                Sesión realizada                     Profesional
+  no_asistio              Paciente no se presentó              Profesional
+  no_asistio_profesional  Profesional no se presentó           Admin / sistema
+  cancelada               Cancelada (con política aplicada)    Paciente/Prof./Admin
+  expirada                No se pagó a tiempo                  Sistema
+
+  TRANSICIONES VÁLIDAS
+    pendiente_pago -> confirmada | cancelada | expirada
+    confirmada     -> atendida | no_asistio | no_asistio_profesional | cancelada
+    (estados finales: atendida, no_asistio, no_asistio_profesional, cancelada,
+     expirada. Solo el admin puede corregirlos, con registro de auditoría.)
+
+  Se eliminan "proxima" y "pasada" como estados guardados: "próxima" y
+  "pasada" pasan a ser filtros de visualización según la fecha.
+
+C6. Confirmación de la cita (secciones 7.2 y 9.4)
+  El flujo actual exige que el profesional "confirme" una cita antes de
+  atenderla. Con el pago anticipado, la cita se confirma sola al pagar.
+  Corrección: eliminar el botón "Confirmar" del profesional (o conservarlo solo
+  como "aceptar la cita" si decides que el profesional pueda rechazarla,
+  ver Parte H).
+
+C7. Acciones del profesional y reglas del servidor (secciones 7.2 y 10)
+  El panel ofrece "Atendida" y "No asistió" sobre "citas próximas" sin
+  mencionar que solo debería ser posible tras la hora de inicio. Corrección:
+  habilitar esos botones solo cuando corresponda y validarlo en el servidor.
+
+C8. Gestión de servicios por profesional (sección 15.6)
+  Si un profesional no tiene servicios asignados, se muestran todos al
+  reservar "como respaldo". Esto permite reservar servicios que el
+  profesional no ofrece. Corrección: no mostrar respaldo; avisar al admin y
+  ocultar al profesional hasta que tenga servicios.
+
+C9. Sección 11 (campos) frente a la sección 5 (páginas)
+  La documentación menciona "dirección" y "ubicación en Huancayo", pero no
+  existe ningún campo para la sede o dirección en la base de datos.
+  Corrección: agregar sedes (address) en settings o site_content.
+
+C10. Acceso del profesional al cambio de contraseña (sección 4.5)
+  Se documenta como limitación, pero no está en la lista de limitaciones de la
+  sección 15. Corrección: incluirla o resolverla (B9).
+
+C11. Formato de la documentación
+  - La versión del documento (1.0) y las migraciones (002 a 006) deberían
+    guardarse en el repositorio junto con el código.
+  - Mantener un registro de cambios (changelog) por versión.
+
+
+================================================================================
+PARTE D. CAMBIOS EN LA BASE DE DATOS
+================================================================================
+
+Tablas nuevas:
+  payments
+    id, appointment_id, monto_total, monto_retenido, monto_reembolsado,
+    estado (pagado | reembolsado | retenido_parcial), metodo ("simulado"),
+    referencia, created_at.
+
+  categories
+    id, nombre, descripcion, imagen_url, orden, activa.
+
+  site_content
+    id, seccion (única), titulo, descripcion, updated_by, updated_at.
+
+  schedule_exceptions
+    id, professional_id, inicio, fin, motivo, created_at.
+
+  settings
+    clave, valor, descripcion, updated_at.
+
+  audit_log
+    id, user_id, accion, tabla, registro_id, valor_anterior, valor_nuevo,
+    created_at.
+
+  consents
+    id, user_id, tipo (terminos | privacidad | consentimiento_informado),
+    version, aceptado_at.
+
+  session_notes (solo si se mantienen)
+    id, appointment_id, professional_id, contenido, updated_at.
+
+  email_log
+    id, destinatario, tipo, estado, created_at.
+
+Cambios en tablas existentes:
+  appointments
+    + service_id (referencia a services)
+    + meeting_url
+    + expira_pago_at
+    + cliente_ingreso_at, profesional_ingreso_at
+    + cancelada_por, motivo_cancelacion, cancelada_at
+    + reprogramaciones_count
+    + precio
+    + motivo_consulta (opcional)
+    + deleted_at (borrado lógico)
+    ~ status: nuevos valores (ver C5)
+    ~ restricción de exclusión por rango de tiempo (B4)
+    ~ restricción por paciente (sin dos citas a la misma hora)
+
+  professionals
+    + precio_sesion (o precio por servicio)
+    + licencia, licencia_verificada
+    + duracion_sesion_min
+    + meeting_url_fijo (solo si eliges la opción B de Meet)
+    ~ category: pasar a referencia de categories (en lugar de lista fija)
+
+  profiles
+    + active (suspensión)
+    + fecha_nacimiento o confirmación de mayoría de edad
+    + zona_horaria (opcional)
+
+  comments
+    + appointment_id (único)
+    + visible
+    ~ author_name: lo asigna el servidor
+
+  services
+    + service_price (si el precio va por servicio)
+    + duracion_min
+    ~ rating y reviews: calculados o retirados
+
+  schedule_blocks
+    + modalidad (opcional, si se separan presencial y virtual)
+
+Vistas para estadísticas:
+  v_pacientes_por_mes
+  v_citas_por_estado
+  v_citas_por_categoria
+  v_ranking_profesionales
+  v_ingresos_por_profesional
+  v_horarios_ocupados (solo profesional, fecha y hora; sin datos del paciente)
+
+RLS a revisar o añadir:
+  payments        paciente ve los suyos; profesional ve resumen de sus citas;
+                  admin todos.
+  appointments    quitar INSERT directo del paciente; meeting_url visible solo
+                  para los dos participantes.
+  comments        INSERT solo si existe cita atendida del usuario con ese
+                  profesional.
+  session_notes   solo el profesional autor.
+  settings, audit_log   solo admin.
+  consents        el usuario ve los suyos; admin lee.
+
+
+================================================================================
+PARTE E. NUEVAS EDGE FUNCTIONS Y PROCESOS AUTOMÁTICOS
+================================================================================
+
+Edge Functions
+  Función                      Quién               Qué hace
+  ---------------------------  ------------------  ---------------------------
+  get-available-slots          Paciente            Devuelve horarios libres
+                                                   (bloques menos citas menos
+                                                   excepciones)
+  book-appointment             Paciente / Admin    Valida y crea la cita
+                                                   "pendiente_pago"
+  simulate-payment             Paciente            Registra el pago simulado y
+                                                   confirma la cita
+  create-meeting               Sistema             Genera o asigna el enlace
+  join-meeting                 Paciente / Prof.    Valida ventana horaria y
+                                                   devuelve el enlace
+  cancel-appointment           Todos               Aplica política de reembolso
+  reschedule-appointment       Paciente            Cambia horario respetando
+                                                   reglas
+  complete-appointment         Profesional         Marca "atendida"
+  mark-no-show                 Profesional         Marca "no asistió" (50%)
+  admin-deactivate-professional Admin              Desactiva y gestiona citas
+                                                   futuras
+  admin-stats                  Admin               Métricas agregadas
+  create-user (existente)      Admin               Mejorar: invitación por
+                                                   correo y reversa ante fallo
+  send-email                   Sistema             Envío por plantilla
+
+Procesos automáticos (pg_cron o programación de Supabase)
+  - Expirar citas pendientes de pago (cada minuto).
+  - Recordatorios 24 horas y 1 hora antes de cada cita.
+  - Aviso al profesional por citas vencidas sin cerrar.
+  - Pedido de reseña unas horas después de una cita atendida.
+  - Recalcular promedio de calificación al insertar una reseña (trigger).
+
+
+================================================================================
+PARTE F. CAMBIOS POR ROL
+================================================================================
+
+PACIENTE (nuevo o modificado)
+  - Registro: aceptar términos, política de privacidad, consentimiento y
+    mayoría de edad; verificar correo.
+  - Recuperar contraseña.
+  - Reserva: resumen con política de cancelación, botón "Realizar pago",
+    pantalla de confirmación.
+  - Mis citas: botón "Unirse" (con ventana horaria), "Cancelar" (muestra el
+    reembolso), "Reprogramar".
+  - Pagos: ver historial de pagos con montos retenidos o reembolsados.
+  - Reseñas: valorar citas atendidas.
+  - Perfil: pedir contraseña actual para cambiarla.
+  - Aviso permanente de que no se atienden emergencias.
+
+PROFESIONAL (nuevo o modificado)
+  - Recibe invitación por correo y define su contraseña; puede cambiarla.
+  - Agenda: "Unirse", "Atendida" y "No asistió" solo cuando corresponde;
+    quitar "Confirmar" (C6).
+  - Panel "Citas por cerrar".
+  - Horarios: bloqueos puntuales, duración de sesión y descanso.
+  - Reserva manual / siguiente sesión para sus pacientes.
+  - Mis pacientes: solo con citas confirmadas o atendidas.
+  - Mi perfil: licencia, enlace de Meet (si opción B).
+  - Mini-dashboard propio y listado de reseñas recibidas.
+  - Notas privadas de sesión (si se mantienen).
+
+ADMINISTRADOR (nuevo o modificado)
+  - Dashboard con estadísticas y ranking (A7).
+  - Profesionales: precio, licencia verificada, invitación por correo,
+    desactivar con gestión de citas futuras.
+  - Categorías y contenido de la página.
+  - Usuarios: suspender/reactivar, protección del último admin.
+  - Citas: reasignar, cancelar con reembolso total, borrado lógico, reserva
+    manual.
+  - Pagos: listado y totales (marcados como simulados).
+  - Reseñas: ocultar en lugar de borrar.
+  - Configuración editable y auditoría.
+
+
+================================================================================
+PARTE G. PLAN DE TRABAJO POR FASES
+================================================================================
+
+FASE 1 - Seguridad y base del flujo (primero, antes de cualquier otra cosa)
+  1. B1, B2, B3, B4: función book-appointment, cancel-appointment, máquina de
+     estados y restricciones de exclusión.
+  2. B6: vista de horarios ocupados sin datos del paciente.
+  3. B7: revisión de XSS y cabeceras de seguridad.
+  4. B19: reversa en create-user.
+  5. Unificar estados (C5) y migrar los datos existentes.
+
+FASE 2 - Flujo de telepsicología
+  6. A1: pago simulado y expiración.
+  7. A2: meeting_url, join-meeting y botón "Unirse".
+  8. A3: política de cancelación y no asistencia.
+  9. A5: SMTP, verificación de correo, recuperación de contraseña, correos de
+     citas y recordatorios.
+  10. A11: aviso de crisis, términos, consentimiento.
+
+FASE 3 - Calidad y administración
+  11. A6: reseñas ligadas a citas.
+  12. A7: dashboard y ranking.
+  13. A8: categorías y contenido editables.
+  14. A9: bloqueos de agenda y reserva manual.
+  15. A10: suspensión de usuarios y coherencia de roles.
+  16. B8 a B18: cambios restantes de seguridad y datos.
+
+FASE 4 - Mejoras
+  17. A4: reprogramación.
+  18. A12: configuración y auditoría.
+  19. Blogs y tests administrables.
+  20. Exportación CSV, almacenamiento de fotos, migraciones con Supabase CLI.
+  21. Pasarela de pago real.
+
+Criterios de aceptación mínimos (para dar por terminada la Fase 1 y 2):
+  - No se puede crear una cita en el pasado, fuera de horario ni con un
+    profesional inactivo, ni llamando directo a la API.
+  - Dos pacientes no pueden reservar el mismo horario ni horarios solapados.
+  - Una cita no pagada se libera sola a los 10 minutos.
+  - El enlace de Meet no es visible fuera de la ventana horaria ni para
+    personas ajenas a la cita.
+  - Cancelar o no asistir aplica el porcentaje correcto y deja el registro en
+    payments.
+  - Todos los correos listados se envían en cada evento.
+  - Ningún texto de usuario ejecuta código en el panel admin.
+
+
+================================================================================
+PARTE H. DECISIONES PENDIENTES
+================================================================================
+  1. Meet: ¿enlace único por cita (Google Calendar API) o fijo por profesional?
+  2. Plazo de cancelación con reembolso completo (propuesta: 24 horas) y
+     porcentaje si cancela con menos tiempo (propuesta: 50%).
+  3. Duración estándar de sesión (propuesta: 50 minutos) y descanso entre
+     sesiones.
+  4. Precio: ¿por profesional, por servicio, o ambos?
+  5. ¿El profesional puede aceptar o rechazar una cita, o se confirma sola al
+     pagar? (afecta C6).
+  6. ¿Se permite reprogramar? ¿Cuántas veces?
+  7. ¿Se mantienen las notas privadas del profesional?
+  8. ¿Se atiende a menores de edad?
+  9. ¿Habrá primera sesión gratuita o de evaluación?
+  10. ¿Las citas presenciales también se pagan por adelantado?
+  11. ¿Se activará la verificación de correo (requiere SMTP propio)?
+  12. ¿Quién redacta y valida los textos legales (términos, privacidad,
+      consentimiento)?
+  13. ¿Se cobrará comisión por sesión a los profesionales?
+  14. ¿Se conservará el borrado físico de citas o se pasa a borrado lógico?
+
+================================================================================
+FIN DEL DOCUMENTO
+================================================================================
