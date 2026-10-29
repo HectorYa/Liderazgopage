@@ -9,4 +9,4 @@ Disallow: /perfil-profesional.html
 Disallow: /login.html
 Disallow: /registro.html
 
-Sitemap: https://excelentemente.org/sitemap.xml
+Sitemap: https://Sanamente.org/sitemap.xml
